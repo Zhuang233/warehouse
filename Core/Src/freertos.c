@@ -58,7 +58,7 @@ enum Stage
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define BLUE  //RED OR BLUE
+#define RED  //RED OR BLUE
 
 
 #ifdef BLUE
