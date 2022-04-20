@@ -163,9 +163,9 @@ int16_t test_spd = 0;
 //电机初启动标志
 bool first_run = 1;
 
-
 bool a_new_ball_in = 0;
 
+bool sw_cal_lattice = false;
 
 //测试数据
 int a = 6290000,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q;
@@ -198,6 +198,7 @@ osThreadId ladderTaskHandle;
 osThreadId gotoSecondHandle;
 osThreadId gotowearhouseHandle;
 osThreadId gohomeHandle;
+osThreadId cal_latticeHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -234,6 +235,7 @@ void LadderTask(void const * argument);
 void GotoSecond(void const * argument);
 void GotoWearhouse(void const * argument);
 void Gohome(void const * argument);
+void Cal_lattice(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -335,6 +337,10 @@ void MX_FREERTOS_Init(void) {
   /* definition and creation of gohome */
   osThreadDef(gohome, Gohome, osPriorityIdle, 0, 128);
   gohomeHandle = osThreadCreate(osThread(gohome), NULL);
+
+  /* definition and creation of cal_lattice */
+  osThreadDef(cal_lattice, Cal_lattice, osPriorityIdle, 0, 128);
+  cal_latticeHandle = osThreadCreate(osThread(cal_lattice), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -1049,6 +1055,50 @@ void Gohome(void const * argument)
     osDelay(1);
   }
   /* USER CODE END Gohome */
+}
+
+/* USER CODE BEGIN Header_Cal_lattice */
+/**
+* @brief Function implementing the cal_lattice thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Cal_lattice */
+void Cal_lattice(void const * argument)
+{
+  /* USER CODE BEGIN Cal_lattice */
+  /* Infinite loop */
+  for(;;) //1 L   2R 
+  {
+		static uint8_t lattice = 0;
+		static uint8_t last = 0;
+		
+		if(sw_cal_lattice)
+		{
+		 		if(beyoundred[2] == 0)
+				{
+					if(last == 0 || last == 2) last = 2;
+					else if(last == 1)
+					{
+						 last = 0;
+						 lattice--;
+					}
+				}
+				
+				if(beyoundred[1] == 0)
+				{
+					if(last == 0 || last == 1) last = 1;
+					else if(last == 2)
+					{
+						 last = 0;
+						 lattice++;
+					}
+				}
+
+		}
+    osDelay(1);
+  }
+  /* USER CODE END Cal_lattice */
 }
 
 /* Private application code --------------------------------------------------*/
