@@ -48,6 +48,7 @@ enum Stage
 	gotoSecondPlatform,
 	takeSecondPlatformBalls,
 	gotoWearhouse,
+	daoduo,
 	PutBalls,
 	goHome
 } stage;
@@ -166,6 +167,8 @@ bool first_run = 1;
 bool a_new_ball_in = 0;
 
 bool sw_cal_lattice = false;
+uint8_t lattice = 0;
+uint8_t last = 0;
 
 //测试数据
 int a = 6290000,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q;
@@ -199,6 +202,7 @@ osThreadId gotoSecondHandle;
 osThreadId gotowearhouseHandle;
 osThreadId gohomeHandle;
 osThreadId cal_latticeHandle;
+osThreadId DaoduoTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -206,7 +210,7 @@ osThreadId cal_latticeHandle;
 void car_reset(void);
 void Aim(bool*);
 void find_lattice(void);
-void find_lattice_v2(void);
+void next_lattice_v2(bool right, uint8_t number);
 void Aim_lattice(int32_t first_line_angle,int32_t second_line_angle,bool* found);
 void approach(int32_t * approach_y);
 void put_in(uint8_t x ,uint8_t y);
@@ -219,6 +223,10 @@ void run_back(int32_t distance , int16_t speed);
 void boit(void);
 void clipit(void);
 void prepare(void);
+bool ball_exist(void);
+void clipit_daoduo(void);
+void putBall_daoduo(void);
+void reset_daoduo(void);
 /* USER CODE END FunctionPrototypes */
 
 void MotoBaseTask(void const * argument);
@@ -236,6 +244,7 @@ void GotoSecond(void const * argument);
 void GotoWearhouse(void const * argument);
 void Gohome(void const * argument);
 void Cal_lattice(void const * argument);
+void daoduoTask(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -341,6 +350,10 @@ void MX_FREERTOS_Init(void) {
   /* definition and creation of cal_lattice */
   osThreadDef(cal_lattice, Cal_lattice, osPriorityIdle, 0, 128);
   cal_latticeHandle = osThreadCreate(osThread(cal_lattice), NULL);
+
+  /* definition and creation of DaoduoTask */
+  osThreadDef(DaoduoTask, daoduoTask, osPriorityIdle, 0, 128);
+  DaoduoTaskHandle = osThreadCreate(osThread(DaoduoTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -734,7 +747,7 @@ void PutBallTask(void const * argument)
 			while(lattice<3)//依次放3列
 			{
 				//走到下一格
-				find_lattice_v2();
+				next_lattice_v2(true,1);
 				lattice++;
 				//查看当前列有无球 有就放没有就跳过
 				ball_exist_y = check_pan(lattice);
@@ -1067,11 +1080,11 @@ void Gohome(void const * argument)
 void Cal_lattice(void const * argument)
 {
   /* USER CODE BEGIN Cal_lattice */
+
   /* Infinite loop */
   for(;;) //1 L   2R 
   {
-		static uint8_t lattice = 0;
-		static uint8_t last = 0;
+
 		
 		if(sw_cal_lattice)
 		{
@@ -1099,6 +1112,69 @@ void Cal_lattice(void const * argument)
     osDelay(1);
   }
   /* USER CODE END Cal_lattice */
+}
+
+/* USER CODE BEGIN Header_daoduoTask */
+/**
+* @brief Function implementing the DaoduoTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_daoduoTask */
+void daoduoTask(void const * argument)
+{
+  /* USER CODE BEGIN daoduoTask */
+	int32_t approach_y1 = 0;
+	bool cliped = false;
+	uint8_t layer = 1;
+  /* Infinite loop */
+  for(;;)
+  {
+		if(stage == daoduo)
+		{
+			prepare();
+			next_lattice_v2(1,2);
+			approach(&approach_y1);//todo
+
+			for(uint8_t i=0; i<3; i++)
+			{		
+				
+				for(uint8_t i=0; i<3; i++)
+				{
+					if(ball_exist())
+					{
+						clipit_daoduo();
+						cliped = true;
+						break;
+					}
+					else
+					{
+						if(layer == 1) next_lattice_v2(1,1);
+						else next_lattice_v2(0,1);
+					}
+				}
+				
+				next_lattice_v2(1, 4-lattice);
+				if(cliped) 
+				{
+					putBall_daoduo();
+				  cliped = false;
+				}
+				
+				if(layer < 3)
+				{
+					reset_daoduo();
+					layer++;
+				}
+				
+		  }
+			//end daoduo
+			
+		  car_reset();
+		}
+    osDelay(1);
+  }
+  /* USER CODE END daoduoTask */
 }
 
 /* Private application code --------------------------------------------------*/
@@ -1135,6 +1211,10 @@ void car_reset()
 	else if(stage == PutBalls)
 	{
 		
+	}
+	else if(stage == daoduo)
+	{
+		//todo
 	}
 }
 
@@ -1198,14 +1278,29 @@ void find_lattice()
 
 }
 
-void find_lattice_v2()
+void next_lattice_v2(bool right, uint8_t number)
 {
-	while(beyoundred[9])
+	for(uint8_t i=0; i<number; i++)
 	{
-		chassis.vx_set = -WEAR_SPD;
-		osDelay(1);
+		if(right)
+		{
+			while(beyoundred[9])
+			{
+				chassis.vx_set = -WEAR_SPD;
+				osDelay(1);
+			}
+			run_right(780000,WEAR_SPD);
+		}
+		else
+		{
+			while(beyoundred[5])
+			{
+				chassis.vx_set = WEAR_SPD;
+				osDelay(1);
+			}
+			run_left(780000,WEAR_SPD);
+		}
 	}
-	run_right(780000,WEAR_SPD);
 }
 
 
@@ -1370,6 +1465,10 @@ void prepare()
 		osDelay(700);
 		servos.clip = 135;	
 	}
+	else if(stage == daoduo)
+	{
+		//todo
+	}
 	
 	
 }
@@ -1411,5 +1510,38 @@ void clipit()
 	servos.move = 0;
 	osDelay(300);
 }
+
+
+bool ball_exist(void)
+{
+	open_openmv();
+	osDelay(50);
+	if(ball_x || ball_y)
+	{
+		osDelay(50);
+		if(ball_x || ball_y) 
+		{
+			close_openmv();
+			return true;
+		}
+	}
+	close_openmv();
+	return false;
+}
+
+
+void clipit_daoduo(void)
+{
+	//todo
+}
+void putBall_daoduo(void)
+{
+	//todo
+}
+void reset_daoduo(void)
+{
+	//todo
+}
+
 
 /* USER CODE END Application */
