@@ -27,3 +27,7 @@ JLinkLog.txt
 *.ioc
 *.mxproject
 
+*.hex
+*.uvprojx
+*.uvoptx
+*.sure
