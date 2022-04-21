@@ -59,7 +59,7 @@ enum Stage
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define RED  //RED OR BLUE
+#define BLUE  //RED OR BLUE
 
 
 #ifdef BLUE
@@ -69,12 +69,12 @@ enum Stage
 #define GF1_FRONT 1822905
 #define GF2_LEFT 3018980
 #define GF3_YAW 90
-#define GF4_RIGHT 5700000
+#define GF4_RIGHT 4600000
 
-#define LAD_FRONT 1076000
+#define LAD_FRONT 192000
 #define LAD_TOTAL_DISTANCE -5771216
-#define LAD1_DIS -1717362
-#define LAD2_DIS -4034873
+#define LAD1_DIS -2081362
+#define LAD2_DIS -4398873
 #define LAD1_HIGH 170000
 #define LAD2_HIGH 450000
 #define LAD3_HIGH 330000
@@ -227,6 +227,8 @@ bool ball_exist(void);
 void clipit_daoduo(void);
 void putBall_daoduo(void);
 void reset_daoduo(void);
+void dingwei(void);
+void  wait_ball(void);
 /* USER CODE END FunctionPrototypes */
 
 void MotoBaseTask(void const * argument);
@@ -653,6 +655,7 @@ void BarPlatform(void const * argument)
 {
   /* USER CODE BEGIN BarPlatform */
 	bool Aimed = false;
+	uint8_t ball_num = 0;
   /* Infinite loop */
   for(;;)
   {
@@ -661,32 +664,48 @@ void BarPlatform(void const * argument)
 			close_openmv();
 			prepare();
 			chassis_reset();
+			run_front(1040000,4000);
+			servos.bo = 45;
+			osDelay(500);
 			open_openmv();
-			
 #ifdef BLUE
-			while(chassis.position_x > - BAR_TOTAL_DISTANCE)
+			
+			while(ball_num < 5)
 			{
-					//球没出现则平移
-					if(ball_x == 0 || ball_y == 0)
-					{						
-						chassis.vx_set = -BAR_SPD;
-					}
-					//球出现则开始瞄准 瞄准完毕则自动夹取
-					else
-					{
-						chassis.vx_set = 0;
-						chassis.vy_set = 0;
-						if(!Aimed) Aim(&Aimed);
-						else 
-						{
-							Aimed = 0;
-							chassis.vx_set = 0;
-							chassis.vy_set = 0;
-							boit();
-						}
-					}
-					osDelay(1);
-			}//endwhile
+				wait_ball();
+				boit();
+				ball_num++;
+			}
+				
+			run_back(1040000,4000);
+			car_reset();
+			run_front(1040000,4000);
+			chassis.chassis_yaw_set = 90;
+			osDelay(1500);
+			
+//			while(chassis.position_x > - BAR_TOTAL_DISTANCE)
+//			{
+//					//球没出现则平移
+//					if(ball_x == 0 || ball_y == 0)
+//					{						
+//						chassis.vx_set = -BAR_SPD;
+//					}
+//					//球出现则开始瞄准 瞄准完毕则自动夹取
+//					else
+//					{
+//						chassis.vx_set = 0;
+//						chassis.vy_set = 0;
+//						if(!Aimed) Aim(&Aimed);
+//						else 
+//						{
+//							Aimed = 0;
+//							chassis.vx_set = 0;
+//							chassis.vy_set = 0;
+//							boit();
+//						}
+//					}
+//					osDelay(1);
+//			}//endwhile
 #endif			
 			
 #ifdef RED
@@ -715,10 +734,11 @@ void BarPlatform(void const * argument)
 			}//endwhile
 #endif
 			
-			chassis.vx_set = 0;
-			run_back(BAR_BACK,RUN_SPD);
-			car_reset();
+//			chassis.vx_set = 0;
+//			run_back(BAR_BACK,RUN_SPD);
+//			car_reset();
 			stage = gotoWearhouse;		
+//stage = reset; 
 		}
 		osDelay(1);	
 	}
@@ -823,6 +843,7 @@ void GotoFirstPlatForm(void const * argument)
 			chassis.chassis_yaw_set = GF3_YAW;
 			osDelay(1000);
 			run_right(GF4_RIGHT,RUN_SPD);
+			dingwei();
 #endif
 
 #ifdef RED
@@ -834,6 +855,7 @@ void GotoFirstPlatForm(void const * argument)
 			run_left(GF4_LEFT,RUN_SPD);
 #endif
 			stage = takeFirstPlatformBalls;
+			//stage = reset;
 		}
 		
     osDelay(1);
@@ -975,12 +997,12 @@ void GotoSecond(void const * argument)
 		if(stage == gotoSecondPlatform)
 		{
 #ifdef BLUE
-			run_right(GS1_RIGHT,RUN_SPD);
-			osDelay(300);
-			chassis.chassis_yaw_set = GS2_YAW;
-			osDelay(800);
-			run_front(GS3_FRONT,RUN_SPD);
-			osDelay(300);
+			chassis.chassis_yaw_set = -90;
+			osDelay(1500);
+			run_front(6240000,RUN_SPD);
+			run_left(4940000,RUN_SPD);
+			dingwei();
+
 #endif
 			
 #ifdef RED
@@ -991,6 +1013,7 @@ void GotoSecond(void const * argument)
 			run_front(GS3_FRONT,RUN_SPD);
 			osDelay(300);
 #endif
+			
 			stage = takeSecondPlatformBalls;
 		}
     osDelay(1);
@@ -1014,11 +1037,8 @@ void GotoWearhouse(void const * argument)
 		if(stage == gotoWearhouse)
 		{
 #ifdef BLUE
-			osDelay(300);
-			chassis.chassis_yaw_set = GW1_YAW;
-			osDelay(800);
-			run_right(GW2_RIGHT,RUN_SPD);
-			osDelay(300);
+			run_left(7800000,RUN_SPD);
+			dingwei();
 #endif
 			
 #ifdef RED
@@ -1028,7 +1048,7 @@ void GotoWearhouse(void const * argument)
 			run_left(GW2_LEFT,RUN_SPD);
 			osDelay(300);
 #endif
-			stage = PutBalls;
+			stage = reset;
 		}
     osDelay(1);
   }
@@ -1080,34 +1100,43 @@ void Gohome(void const * argument)
 void Cal_lattice(void const * argument)
 {
   /* USER CODE BEGIN Cal_lattice */
-
+	uint8_t flag = 0;
+	uint8_t left_or_right = 0;
   /* Infinite loop */
   for(;;) //1 L   2R 
   {
 
-		
 		if(sw_cal_lattice)
 		{
-		 		if(beyoundred[2] == 0)
+			if(chassis.vx_set > 0)
+			{
+				while(beyoundred[8] != 0 && sw_cal_lattice)
 				{
-					if(last == 0 || last == 2) last = 2;
-					else if(last == 1)
-					{
-						 last = 0;
-						 lattice--;
-					}
+					osDelay(1);
 				}
 				
-				if(beyoundred[1] == 0)
+				while(beyoundred[6] != 0 && sw_cal_lattice)
 				{
-					if(last == 0 || last == 1) last = 1;
-					else if(last == 2)
-					{
-						 last = 0;
-						 lattice++;
-					}
+					osDelay(1);
 				}
-
+				 if(sw_cal_lattice) lattice--;
+			}
+			
+			if(chassis.vx_set < 0 && sw_cal_lattice)
+			{
+				while(beyoundred[6] != 0)
+				{
+					osDelay(1);
+				}
+				
+				while(beyoundred[8] != 0 && sw_cal_lattice)
+				{
+					osDelay(1);
+				}
+				
+				if(sw_cal_lattice) lattice++;	
+			}
+					
 		}
     osDelay(1);
   }
@@ -1233,6 +1262,14 @@ void Aim(bool* Aimed)
 	
 }
 
+void  wait_ball()
+{
+	while(!ball_x)
+	{
+		osDelay(1);
+	}
+	return;
+}
 
 void find_lattice()
 {
@@ -1434,7 +1471,7 @@ void prepare()
 		servos.clip = 80;
 		servos.move = 70;
 		servos.arm = 116;
-		servos.bo = 45;
+		servos.bo = 120;
 		servos.top = 177;
 		osDelay(500);
 		angle_lift = 400000;
@@ -1543,5 +1580,56 @@ void reset_daoduo(void)
 	//todo
 }
 
+
+void dingwei(void)
+{
+	if(stage == gotoFirstPlatform)
+	{
+		while(beyoundred[0])
+		{
+			chassis.vx_set = -3000;
+			osDelay(1);
+		}
+		chassis.vx_set = 0;
+		while(beyoundred[4])
+		{
+			chassis.vy_set = -3000;
+			osDelay(1);
+		}
+		chassis.vy_set = 0;
+	}
+	else if(stage == gotoSecondPlatform)
+	{
+		while(beyoundred[5])
+		{
+			chassis.vx_set = 3000;
+			osDelay(1);
+		}
+		chassis.vx_set = 0;
+		while(beyoundred[9])
+		{
+			chassis.vy_set = 3000;
+			osDelay(1);
+		}
+		chassis.vy_set = 0;
+	}
+	else if(stage == gotoWearhouse)
+	{
+		osDelay(3000);
+		while(beyoundred[7])
+		{
+			chassis.vx_set = 3000;
+			osDelay(1);
+		}
+		chassis.vx_set = 0;
+		while(beyoundred[0])
+		{
+			chassis.vy_set = -3000;
+			osDelay(1);
+		}
+		chassis.vy_set = 0;
+	}
+	
+}
 
 /* USER CODE END Application */
