@@ -663,9 +663,10 @@ void BarPlatform(void const * argument)
 		{
 			close_openmv();
 			prepare();
+			osDelay(2000);
 			chassis_reset();
-			run_front(1040000,4000);
-			servos.bo = 45;
+			run_front(1300000,1000);
+			servos.bo = 50;
 			osDelay(500);
 			open_openmv();
 #ifdef BLUE
@@ -677,7 +678,7 @@ void BarPlatform(void const * argument)
 				ball_num++;
 			}
 				
-			run_back(1040000,4000);
+			run_back(1300000,4000);
 			car_reset();
 			run_front(1040000,4000);
 			chassis.chassis_yaw_set = 90;
@@ -1264,7 +1265,7 @@ void Aim(bool* Aimed)
 
 void  wait_ball()
 {
-	while(!ball_x)
+	while(ball_x < 115 || ball_x > 125)
 	{
 		osDelay(1);
 	}
@@ -1469,12 +1470,12 @@ void prepare()
 	if(stage == takeSecondPlatformBalls)//条形平台姿态预备
 	{
 		servos.clip = 80;
-		servos.move = 70;
+		//servos.move = 70;
 		servos.arm = 116;
 		servos.bo = 120;
-		servos.top = 177;
+		servos.top = 110;
 		osDelay(500);
-		angle_lift = 400000;
+		angle_lift = 415000;
 		servos.yindao =  80;
 		osDelay(500);
 	}
@@ -1512,15 +1513,15 @@ void prepare()
 void boit()
 {
 	servos.bo = 0;
-	servos.top = 120;
-	osDelay(500);
-	servos.bo = 45;
-	servos.top = 177;	
+	servos.top = 70;
+	osDelay(300);
+	servos.bo = 50;
+	servos.top = 110;	
 	servos.move = 280;
 	osDelay(800);
 	turn_box(0,1);
 	osDelay(400);
-	servos.move = 100;
+	//servos.move = 100;
 	osDelay(300);
 }
 
@@ -1600,7 +1601,7 @@ void dingwei(void)
 	}
 	else if(stage == gotoSecondPlatform)
 	{
-		while(beyoundred[5])
+		while(beyoundred[7])
 		{
 			chassis.vx_set = 3000;
 			osDelay(1);
