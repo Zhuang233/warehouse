@@ -71,7 +71,7 @@ enum Stage
 #define GF3_YAW 90
 #define GF4_RIGHT 4600000
 
-#define LAD_FRONT 192000
+#define LAD_FRONT 192000 //tochange
 #define LAD_TOTAL_DISTANCE -5771216
 #define LAD1_DIS -2081362
 #define LAD2_DIS -4398873
@@ -228,7 +228,7 @@ void clipit_daoduo(void);
 void putBall_daoduo(void);
 void reset_daoduo(void);
 void dingwei(void);
-void  wait_ball(void);
+void wait_ball(void);
 /* USER CODE END FunctionPrototypes */
 
 void MotoBaseTask(void const * argument);
@@ -661,13 +661,14 @@ void BarPlatform(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-		if(stage == takeSecondPlatformBalls )//进入条形平台阶段
+		if(stage == takeSecondPlatformBalls )//进入圆盘机阶段
 		{
 			close_openmv();
 			prepare();
+			change_pid_slow();
 			osDelay(2000);
 			chassis_reset();
-			run_front(1300000,1000);
+			run_front(1300000,1000);//tochange ??
 			servos.bo = 50;
 			osDelay(500);
 			open_openmv();
@@ -680,6 +681,7 @@ void BarPlatform(void const * argument)
 				ball_num++;
 			}
 				
+			change_pid_nomal();
 			run_back(1300000,4000);
 			car_reset();
 			run_front(1040000,4000);
@@ -887,6 +889,7 @@ void LadderTask(void const * argument)
 			prepare();
 			run_front(LAD_FRONT,RUN_SPD);
 			chassis_reset();
+			change_pid_slow();
 			open_openmv();
 			
 			
@@ -976,6 +979,7 @@ void LadderTask(void const * argument)
 #endif
 			chassis.vx_set = 0;
 			ladder = 0;			
+			change_pid_nomal();
 			run_back(LAD_BACK,RUN_SPD);
 			dingwei();
 			car_reset();
@@ -1651,5 +1655,6 @@ void dingwei(void)
 	}
 	
 }
+
 
 /* USER CODE END Application */

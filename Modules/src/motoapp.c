@@ -9,15 +9,19 @@
 #define PID_CHASSIS_SPD_KI 60.0f
 #define PID_CHASSIS_SPD_KD 0.00002f
 
+#define KP_SLOW 1.235f //tochange(低速跑时的专用pid)
+#define KI_SLOW 60.0f
+#define KD_SLOW 0.00002f
+
 #define PID_CHASSIS_POS_KP 0.0f
 #define PID_CHASSIS_POS_KI 0.0f
 #define PID_CHASSIS_POS_KD 0.0f
 
-#define PID_CHASSIS_YAW_SPD_KP 1.0f
+#define PID_CHASSIS_YAW_SPD_KP 1.0f //只用了pos单环（yaw->wz）
 #define PID_CHASSIS_YAW_SPD_KI 0.0f
 #define PID_CHASSIS_YAW_SPD_KD 0.0f
 
-#define PID_CHASSIS_YAW_POS_KP 100.0f
+#define PID_CHASSIS_YAW_POS_KP 100.0f//可能tochange (变大误差小时可变硬，注意最大值控制，不然误差大时太猛)
 #define PID_CHASSIS_YAW_POS_KI 0.0f
 #define PID_CHASSIS_YAW_POS_KD 0.0f
 
@@ -31,7 +35,7 @@
 #define CHASSIS_VX_MIN	-10000
 #define CHASSIS_VY_MAX	10000
 #define CHASSIS_VY_MIN	-10000
-#define CHASSIS_WZ_MAX	8000
+#define CHASSIS_WZ_MAX	8000  //tochange slow
 #define CHASSIS_WZ_MIN	-8000
 
 #define MAX_WHEEL_SPEED 19000.0f
@@ -155,7 +159,7 @@ void chassis_init()
 
 void lift_moto_Control(void)
 {
-  int32_t temp = 0;
+  float temp = 0;
   int32_t d_angle;
    
 	if(angle_lift > ANGLE_LIFT_MAX) angle_lift = ANGLE_LIFT_MAX;
@@ -170,7 +174,7 @@ void lift_moto_Control(void)
 	  pidSetParameter(&pid_lift_pos[i],desired,motor_msg[i+4].angle_desired);
 	  pidSetParameter(&pid_lift_pos[i],dt,ctrl_time.dt);
 	  temp=pidUpdate(&pid_lift_pos[i],motor_msg[i+4].angle);
-		temp=constraint(temp,5000,-5000);
+		float_constraint(&temp,5000,-5000);
 	  motor_msg[i+4].speed_desired = temp - K_d_angle*d_angle;
   }
   
@@ -180,7 +184,7 @@ void lift_moto_Control(void)
 	  pidSetParameter(&pid_lift_spd[i],desired,motor_msg[i+4].speed_desired);
 	  pidSetParameter(&pid_lift_spd[i],dt,ctrl_time.dt);
 	  temp=pidUpdate(&pid_lift_spd[i],motor_msg[i+4].speed_actual);
-	  temp=constraint(temp,10000,-10000);
+	  float_constraint(&temp,10000,-10000);
 	  motor_msg[i+4].given_current=temp;  
   }
 }
@@ -209,7 +213,7 @@ void pan_moto_Control(void)
 
 void chassis_moto_Control(void)
 {
-  int16_t temp = 0;
+  float temp = 0;
 	
 	chassis_feedback_update(&chassis);
 	chassis_set_contorl(&chassis);
@@ -221,7 +225,7 @@ void chassis_moto_Control(void)
 	  pidSetParameter(&pid_chassis_spd[i],desired,motor_msg[i].speed_desired);
 	  pidSetParameter(&pid_chassis_spd[i],dt,ctrl_time.dt);
 	  temp=pidUpdate(&pid_chassis_spd[i],motor_msg[i].speed_actual);
-	  int16_constraint(&temp,10000,-10000);
+	  float_constraint(&temp,10000,-10000);
 	  motor_msg[i].given_current=temp;  
   }
   
@@ -236,6 +240,21 @@ void chassis_reset()
 	for(uint8_t i = 0; i < 4 ;i++)
 	{
 		motor_msg[i].first_run = true;
+	}
+}
+
+void change_pid_slow(void)
+{
+	for(uint8_t i = 0; i < 4; i++)
+	{
+		pidParameterSet(&pid_chassis_spd[i],KP_SLOW,KI_SLOW,KD_SLOW);
+	}
+}
+void change_pid_nomal(void)
+{
+	for(uint8_t i = 0; i < 4; i++)
+	{
+		pidParameterSet(&pid_chassis_spd[i], PID_CHASSIS_SPD_KP, PID_CHASSIS_SPD_KI, PID_CHASSIS_SPD_KD);
 	}
 }
 

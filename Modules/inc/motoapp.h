@@ -56,6 +56,8 @@ void chassis_moto_Control(void);
 void pan_moto_Control(void);
 void lift_moto_Control(void);
 void chassis_reset(void);
+void change_pid_slow(void);
+void change_pid_nomal(void);
 
 
 
