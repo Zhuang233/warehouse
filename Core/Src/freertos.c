@@ -416,7 +416,7 @@ void ChassisTask(void const * argument)
   {
 		if(sw == 0)//启动缓冲
 		{
-			osDelay(5000);
+			osDelay(2000);
 			sw = 1;
 		}
 		if(RC_CtrlData.rc.sw1==3)
@@ -490,6 +490,7 @@ void PanTask(void const * argument)
 void FuncTestTask(void const * argument)
 {
   /* USER CODE BEGIN FuncTestTask */
+	bool first_wait = true;
   /* Infinite loop */
   for(;;)
   {
@@ -502,9 +503,10 @@ void FuncTestTask(void const * argument)
 		
 		
 		//start run
-		if(RC_CtrlData.rc.sw2 == 2)
+		if(RC_CtrlData.rc.sw2 == 2 && first_wait == true)
 		{
 			stage = gotoFirstPlatform;
+			first_wait = false;
 		}
 		//自动夹取加识别测试
 		if(auto_clip == 1)
@@ -904,7 +906,7 @@ void LadderTask(void const * argument)
 				{
 					chassis.vx_set = 0;
 					angle_lift = LAD3_HIGH;
-					osDelay(2000);
+					osDelay(1500);
 					ladder = 3;
 				}
 				
@@ -912,6 +914,7 @@ void LadderTask(void const * argument)
 				if(ball_x == 0 || ball_y == 0)//球没出现则平移
 				{
 					chassis.vx_set = -LAD_SPD;
+					chassis.vy_set = 0;
 				}
 				else
 				{
@@ -974,6 +977,7 @@ void LadderTask(void const * argument)
 			chassis.vx_set = 0;
 			ladder = 0;			
 			run_back(LAD_BACK,RUN_SPD);
+			dingwei();
 			car_reset();
 			stage = gotoSecondPlatform;
 		}//endstage
@@ -1585,6 +1589,21 @@ void reset_daoduo(void)
 void dingwei(void)
 {
 	if(stage == gotoFirstPlatform)
+	{
+		while(beyoundred[0])
+		{
+			chassis.vx_set = -3000;
+			osDelay(1);
+		}
+		chassis.vx_set = 0;
+		while(beyoundred[4])
+		{
+			chassis.vy_set = -3000;
+			osDelay(1);
+		}
+		chassis.vy_set = 0;
+	}
+	else if(stage == takeFirstPlatformBalls)
 	{
 		while(beyoundred[0])
 		{
