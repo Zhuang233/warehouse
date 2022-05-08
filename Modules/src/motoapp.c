@@ -9,7 +9,7 @@
 #define PID_CHASSIS_SPD_KI 60.0f
 #define PID_CHASSIS_SPD_KD 0.00002f
 
-#define KP_SLOW 1.235f //tochange(低速跑时的专用pid)
+#define KP_SLOW 50.f
 #define KI_SLOW 60.0f
 #define KD_SLOW 0.00002f
 
@@ -21,9 +21,9 @@
 #define PID_CHASSIS_YAW_SPD_KI 0.0f
 #define PID_CHASSIS_YAW_SPD_KD 0.0f
 
-#define PID_CHASSIS_YAW_POS_KP 100.0f//可能tochange (变大误差小时可变硬，注意最大值控制，不然误差大时太猛)
-#define PID_CHASSIS_YAW_POS_KI 0.0f
-#define PID_CHASSIS_YAW_POS_KD 0.0f
+#define PID_CHASSIS_YAW_POS_KP 400.0f//可能tochange (变大误差小时可变硬，注意最大值控制，不然误差大时太猛)
+#define PID_CHASSIS_YAW_POS_KI 10.0f
+#define PID_CHASSIS_YAW_POS_KD 2.0f
 
 #define CHASSIS_I_LIMIT_SPD 3000
 #define CHASSIS_I_LIMIT_POS 3000
@@ -87,6 +87,7 @@ PidObject pid_pan_pos;
 chassis_move_t chassis;
 int32_t angle_lift=0;
 uint8_t ramp = 3;
+
 
 
 
@@ -283,6 +284,7 @@ void chassis_set_contorl(chassis_move_t *chassis)
 	pidSetParameter(&pid_chassis_yaw_pos,desired,chassis->chassis_yaw_set);
 	pidSetParameter(&pid_chassis_yaw_pos,dt,ctrl_time.dt);
 	temp=pidUpdate(&pid_chassis_yaw_pos,chassis->chassis_yaw);
+	float_constraint(&temp,3500.0,-3500.0);
 	chassis->wz_set=temp;
 	
 	int16_constraint(&chassis->wz_set,chassis->wz_max_speed,chassis->wz_min_speed);
