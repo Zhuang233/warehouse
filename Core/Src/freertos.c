@@ -924,16 +924,19 @@ void LadderTask(void const * argument)
 				}
 				else
 				{
+					if(chassis.position_x > LAD2_DIS+150000 || chassis.position_x < LAD2_DIS)
+					{		
 						if(!aimed2) Aim(&aimed2);
 						else 
 						{	
-							aimed2 = 0;
-							chassis.vx_set = 0;
-							chassis.vy_set = 0;
-							close_openmv();
-							clipit();
-							open_openmv();
+								aimed2 = 0;
+								chassis.vx_set = 0;
+								chassis.vy_set = 0;
+								close_openmv();
+								clipit();
+								open_openmv();
 						}
+					}
 				}
 				osDelay(1);
 			}//endwhile
@@ -1268,7 +1271,7 @@ void car_reset()
 void Aim(bool* Aimed)
 {
 	int16_t error_x = ball_x - 70;
-	int16_t error_y = ball_y - 76;
+	int16_t error_y = ball_y - 50;
 //	if(error_x < 35 && error_x > -35 ) error_x *= 1.5;
 //	if(error_y < 35 && error_y > -35 ) error_y *= 1.5;	
 	chassis.vx_set = error_x * 12.0f; 
