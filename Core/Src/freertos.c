@@ -668,7 +668,7 @@ void BarPlatform(void const * argument)
 			change_pid_slow();
 			osDelay(2000);
 			chassis_reset();
-			run_front(1000000,1000);//tochange ??
+			run_front(1364000,1000);//tochange ??
 			servos.bo = 50;
 			osDelay(500);
 			open_openmv();
