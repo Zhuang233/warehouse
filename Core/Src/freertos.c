@@ -1507,8 +1507,8 @@ void prepare()
 		servos.clip = 140;
 		osDelay(500);
 		angle_lift = LAD1_HIGH;
-		servos.move = 0;
-		servos.yindao =  85;
+		servos.move = 280;
+		servos.yindao =  68;
 		
 	}
 	else if(stage == PutBalls)//²Ö¿â×ËÌ¬Ô¤±¸
@@ -1552,21 +1552,26 @@ void clipit()
 	servos.clip = 155;
 	osDelay(300);
 	servos.arm = 120;
+	servos.bo = 100;
 	osDelay(300);
 	servos.top = 50;
 	osDelay(800);
-	servos.arm = 107;
+	servos.arm = 88;
 	osDelay(500);
 	servos.clip = 140;
 	osDelay(700);
 	servos.move = 280;
 	servos.arm = 120;
 	osDelay(700);
+	servos.bo = 45;
+	servos.yindao = 107;
+	osDelay(500);
 	turn_box(0,1);
 	servos.top = 300;
 	osDelay(500);
-	servos.move = 0;
-	osDelay(300);
+	servos.yindao = 68;
+//	servos.move = 0;
+//	osDelay(300);
 }
 
 
