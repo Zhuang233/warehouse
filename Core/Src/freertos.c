@@ -668,7 +668,7 @@ void BarPlatform(void const * argument)
 			change_pid_slow();
 			osDelay(2000);
 			chassis_reset();
-			run_front(1300000,1000);//tochange ??
+			run_front(1000000,1000);//tochange ??
 			servos.bo = 50;
 			osDelay(500);
 			open_openmv();
@@ -685,9 +685,10 @@ void BarPlatform(void const * argument)
 			run_back(1300000,4000);
 			car_reset();
 			run_front(1040000,4000);
+			change_yaw_pid_turn();
 			chassis.chassis_yaw_set = 90;
-			osDelay(1500);
-			
+			osDelay(2500);
+			change_yaw_pid_run();
 //			while(chassis.position_x > - BAR_TOTAL_DISTANCE)
 //			{
 //					//球没出现则平移
@@ -845,8 +846,10 @@ void GotoFirstPlatForm(void const * argument)
 			run_front(GF1_FRONT,RUN_SPD);
 			run_left(GF2_LEFT,RUN_SPD);
 			osDelay(500);
+			change_yaw_pid_turn();
 			chassis.chassis_yaw_set = GF3_YAW;
-			osDelay(1000);
+			osDelay(2500);
+			change_yaw_pid_run();
 			run_right(GF4_RIGHT,RUN_SPD);
 			dingwei();
 #endif
@@ -888,8 +891,8 @@ void LadderTask(void const * argument)
 			close_openmv();
 			prepare();
 			run_front(LAD_FRONT,RUN_SPD);
-			chassis_reset();
 			change_pid_slow();
+			chassis_reset();
 			open_openmv();
 			
 			
@@ -981,6 +984,7 @@ void LadderTask(void const * argument)
 			ladder = 0;			
 			change_pid_nomal();
 			run_back(LAD_BACK,RUN_SPD);
+			run_left(520000,1500);
 			dingwei();
 			car_reset();
 			stage = gotoSecondPlatform;
@@ -1006,8 +1010,10 @@ void GotoSecond(void const * argument)
 		if(stage == gotoSecondPlatform)
 		{
 #ifdef BLUE
+			change_yaw_pid_run();
 			chassis.chassis_yaw_set = -90;
-			osDelay(1500);
+			osDelay(3500);
+			change_yaw_pid_run();
 			run_front(6240000,RUN_SPD);
 			run_left(4940000,RUN_SPD);
 			dingwei();
@@ -1081,7 +1087,10 @@ void Gohome(void const * argument)
 		{
 #ifdef BLUE
 			run_right(GH1_RINGT,RUN_SPD);
+			change_yaw_pid_turn();
 			chassis.chassis_yaw_set = GH2_YAW;
+			osDelay(2500);
+			change_yaw_pid_run();
 			run_left(GH3_LEFT,RUN_SPD);
 			run_back(GH4_BACK,RUN_SPD);
 #endif

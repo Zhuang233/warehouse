@@ -58,6 +58,8 @@ void lift_moto_Control(void);
 void chassis_reset(void);
 void change_pid_slow(void);
 void change_pid_nomal(void);
+void change_yaw_pid_turn(void);
+void change_yaw_pid_run(void);
 
 
 

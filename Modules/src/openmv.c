@@ -6,8 +6,8 @@ bool openmv_read_start = 0;
 uint8_t openmv_data = 0;
 uint8_t openmv_buf_size = 0;
 uint8_t openmv_buf[2];
-uint8_t ball_x;
-uint8_t ball_y;
+uint8_t ball_x = 0;
+uint8_t ball_y = 0;
 
 
 void decode_openmv_data()

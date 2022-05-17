@@ -159,7 +159,7 @@
           <Type>0</Type>
           <LineNumber>187</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134220484</Address>
+          <Address>134220496</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -282,132 +282,102 @@
         <Ww>
           <count>2</count>
           <WinNumber>2</WinNumber>
-          <ItemText>bodanpan,0x10</ItemText>
+          <ItemText>start_put,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>3</count>
           <WinNumber>2</WinNumber>
-          <ItemText>start_put,0x0A</ItemText>
+          <ItemText>angle_lift,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>4</count>
           <WinNumber>2</WinNumber>
-          <ItemText>angle_lift,0x0A</ItemText>
+          <ItemText>pid_chassis_yaw_pos</ItemText>
         </Ww>
         <Ww>
           <count>5</count>
           <WinNumber>2</WinNumber>
-          <ItemText>pid_chassis_yaw_pos</ItemText>
+          <ItemText>auto_clip,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>6</count>
           <WinNumber>2</WinNumber>
-          <ItemText>auto_clip,0x0A</ItemText>
+          <ItemText>start_clip,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>7</count>
           <WinNumber>2</WinNumber>
-          <ItemText>start_clip,0x0A</ItemText>
+          <ItemText>auto_output,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>8</count>
           <WinNumber>2</WinNumber>
-          <ItemText>auto_output,0x0A</ItemText>
+          <ItemText>start_output,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>9</count>
           <WinNumber>2</WinNumber>
-          <ItemText>start_output,0x0A</ItemText>
+          <ItemText>stage,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>10</count>
           <WinNumber>2</WinNumber>
-          <ItemText>\\wearhouse\../Modules/src/openmv.c\openmv_buf,0x0A</ItemText>
+          <ItemText>servos_soft</ItemText>
         </Ww>
         <Ww>
           <count>11</count>
           <WinNumber>2</WinNumber>
-          <ItemText>stage,0x0A</ItemText>
+          <ItemText>line_buf</ItemText>
         </Ww>
         <Ww>
           <count>12</count>
           <WinNumber>2</WinNumber>
-          <ItemText>servos_soft</ItemText>
+          <ItemText>beyoundred</ItemText>
         </Ww>
         <Ww>
           <count>13</count>
           <WinNumber>2</WinNumber>
-          <ItemText>line_buf</ItemText>
+          <ItemText>line_err,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>14</count>
           <WinNumber>2</WinNumber>
-          <ItemText>beyoundred</ItemText>
+          <ItemText>chassis,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>15</count>
           <WinNumber>2</WinNumber>
-          <ItemText>line_err,0x0A</ItemText>
+          <ItemText>ball_x,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>16</count>
           <WinNumber>2</WinNumber>
-          <ItemText>chassis,0x0A</ItemText>
+          <ItemText>ball_y,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>17</count>
           <WinNumber>2</WinNumber>
-          <ItemText>ball_x,0x0A</ItemText>
+          <ItemText>openmv_read_start</ItemText>
         </Ww>
         <Ww>
           <count>18</count>
           <WinNumber>2</WinNumber>
-          <ItemText>ball_y,0x0A</ItemText>
+          <ItemText>openmv_sw</ItemText>
         </Ww>
         <Ww>
           <count>19</count>
           <WinNumber>2</WinNumber>
-          <ItemText>openmv_read_start</ItemText>
+          <ItemText>angle_lift,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>20</count>
           <WinNumber>2</WinNumber>
-          <ItemText>openmv_sw</ItemText>
+          <ItemText>moto_clear</ItemText>
         </Ww>
         <Ww>
           <count>21</count>
           <WinNumber>2</WinNumber>
-          <ItemText>angle_lift,0x0A</ItemText>
-        </Ww>
-        <Ww>
-          <count>22</count>
-          <WinNumber>2</WinNumber>
-          <ItemText>moto_clear</ItemText>
-        </Ww>
-        <Ww>
-          <count>23</count>
-          <WinNumber>2</WinNumber>
           <ItemText>servos</ItemText>
-        </Ww>
-        <Ww>
-          <count>24</count>
-          <WinNumber>2</WinNumber>
-          <ItemText>kp_t</ItemText>
-        </Ww>
-        <Ww>
-          <count>25</count>
-          <WinNumber>2</WinNumber>
-          <ItemText>ki_t</ItemText>
-        </Ww>
-        <Ww>
-          <count>26</count>
-          <WinNumber>2</WinNumber>
-          <ItemText>kd_t</ItemText>
-        </Ww>
-        <Ww>
-          <count>27</count>
-          <WinNumber>2</WinNumber>
-          <ItemText>yaw_max</ItemText>
         </Ww>
       </WatchWindow2>
       <Tracepoint>

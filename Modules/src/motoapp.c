@@ -9,7 +9,7 @@
 #define PID_CHASSIS_SPD_KI 60.0f
 #define PID_CHASSIS_SPD_KD 0.00002f
 
-#define KP_SLOW 50.f
+#define KP_SLOW 5.0f
 #define KI_SLOW 60.0f
 #define KD_SLOW 0.00002f
 
@@ -22,14 +22,15 @@
 #define PID_CHASSIS_YAW_SPD_KD 0.0f
 
 #define PID_CHASSIS_YAW_POS_KP 400.0f//可能tochange (变大误差小时可变硬，注意最大值控制，不然误差大时太猛)
-#define PID_CHASSIS_YAW_POS_KI 10.0f
+#define PID_CHASSIS_YAW_POS_KI 50.0f
 #define PID_CHASSIS_YAW_POS_KD 2.0f
+#define PID_CHASSIS_YAW_POS_DEADBAND 0.1f
 
 #define CHASSIS_I_LIMIT_SPD 3000
 #define CHASSIS_I_LIMIT_POS 3000
 
 #define CHASSIS_YAW_I_LIMIT_SPD 3000
-#define CHASSIS_YAW_I_LIMIT_POS 3000
+#define CHASSIS_YAW_I_LIMIT_POS 0
 
 #define CHASSIS_VX_MAX	10000
 #define CHASSIS_VX_MIN	-10000
@@ -126,6 +127,7 @@ void motos_pid_Init()
     pidSetParameter(&pid_chassis_yaw_spd,iLimit,CHASSIS_YAW_I_LIMIT_SPD);
     pidInit(&pid_chassis_yaw_pos,0,PID_CHASSIS_YAW_POS_KP,PID_CHASSIS_YAW_POS_KI,PID_CHASSIS_YAW_POS_KD,0.002);
     pidSetParameter(&pid_chassis_yaw_pos,iLimit,CHASSIS_YAW_I_LIMIT_POS);
+		pidSetParameter(&pid_chassis_yaw_pos,deadband,PID_CHASSIS_YAW_POS_DEADBAND);
 	
 	//龙门架
 	for(i=0;i<2;i++)
@@ -259,6 +261,15 @@ void change_pid_nomal(void)
 	}
 }
 
+void change_yaw_pid_turn()
+{
+	pidSetParameter(&pid_chassis_yaw_pos,kp,PID_CHASSIS_YAW_POS_KP);
+}
+
+void change_yaw_pid_run()
+{
+	pidSetParameter(&pid_chassis_yaw_pos,kp,100);
+}
 
 
 
