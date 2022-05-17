@@ -9,7 +9,7 @@ typedef struct
   int16_t vx;                
   int16_t vy;                
   int16_t wz;     
-	uint8_t yaw_turns;
+	int16_t yaw_turns;
 	float last_yaw;
 	int32_t position_x;
 	int32_t position_y;

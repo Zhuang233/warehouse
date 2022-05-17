@@ -1055,7 +1055,7 @@ void GotoWearhouse(void const * argument)
 		if(stage == gotoWearhouse)
 		{
 #ifdef BLUE
-			run_left(7800000,RUN_SPD);
+			run_left(8580000,RUN_SPD);
 			dingwei();
 #endif
 			
