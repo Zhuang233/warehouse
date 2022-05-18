@@ -48,6 +48,8 @@ enum Stage
 	gotoSecondPlatform,
 	takeSecondPlatformBalls,
 	gotoWearhouse,
+	takeLiZhuangBalls,
+	gotoDaoduo,
 	daoduo,
 	PutBalls,
 	goHome
@@ -203,6 +205,7 @@ osThreadId gotowearhouseHandle;
 osThreadId gohomeHandle;
 osThreadId cal_latticeHandle;
 osThreadId DaoduoTaskHandle;
+osThreadId lizhaungtaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -247,6 +250,7 @@ void GotoWearhouse(void const * argument);
 void Gohome(void const * argument);
 void Cal_lattice(void const * argument);
 void daoduoTask(void const * argument);
+void lizhuangTask(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -356,6 +360,10 @@ void MX_FREERTOS_Init(void) {
   /* definition and creation of DaoduoTask */
   osThreadDef(DaoduoTask, daoduoTask, osPriorityIdle, 0, 128);
   DaoduoTaskHandle = osThreadCreate(osThread(DaoduoTask), NULL);
+
+  /* definition and creation of lizhaungtask */
+  osThreadDef(lizhaungtask, lizhuangTask, osPriorityIdle, 0, 128);
+  lizhaungtaskHandle = osThreadCreate(osThread(lizhaungtask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -1231,6 +1239,61 @@ void daoduoTask(void const * argument)
   /* USER CODE END daoduoTask */
 }
 
+/* USER CODE BEGIN Header_lizhuangTask */
+/**
+* @brief Function implementing the lizhaungtask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_lizhuangTask */
+void lizhuangTask(void const * argument)
+{
+  /* USER CODE BEGIN lizhuangTask */
+	float initial_yaw =0.0;
+  /* Infinite loop */
+  for(;;)
+  {
+		if(stage == takeLiZhuangBalls)
+		{
+			initial_yaw = chassis.chassis_yaw_set;
+			close_openmv();
+			prepare();
+			change_pid_slow();
+			chassis_reset();
+			open_openmv();
+		
+		
+			while(chassis.chassis_yaw > initial_yaw - 360.0 && chassis.chassis_yaw < initial_yaw+360.0)//one cycle
+			{
+				
+				chassis.vx_set = 515;
+				chassis.chassis_yaw_set -=0.0075;
+				
+				if(ball_x > 65 && ball_x < 75)//have found ball
+				{
+					chassis.vx_set = 0;
+					chassis.vy_set = 0;
+					chassis.chassis_yaw_set = chassis.chassis_yaw;
+					close_openmv();
+					clipit();
+					open_openmv();
+				}
+				osDelay(1);
+			}//endwhile
+			
+			change_pid_nomal();
+			run_back(750000,RUN_SPD);
+			car_reset();
+			chassis.chassis_yaw_set = initial_yaw + 180.0;
+			osDelay(3000);
+			stage = gotoDaoduo;
+		}
+		
+    osDelay(1);
+  }
+  /* USER CODE END lizhuangTask */
+}
+
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 
@@ -1269,6 +1332,17 @@ void car_reset()
 	else if(stage == daoduo)
 	{
 		//todo
+	}
+	else if(stage == takeLiZhuangBalls)//maybe to change
+	{
+		servos.yindao = 160;
+		servos.move = 280;
+		angle_lift = 0;
+		osDelay(800);
+		servos.arm = 30;
+		servos.clip = 80;
+		servos.bo = 46;
+		servos.top = 50;
 	}
 }
 
