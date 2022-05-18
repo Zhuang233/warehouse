@@ -1069,12 +1069,20 @@ void GotoWearhouse(void const * argument)
 		if(stage == gotoWearhouse)
 		{
 #ifdef BLUE
-			run_left(8580000,RUN_SPD);
+			run_left(8080000,RUN_SPD);
+			
+			close_openmv();
+			prepare();
+			change_pid_slow();
+			chassis_reset();
+
 			dingwei();
 			osDelay(300);
-			run_back(260000,1500);
+			run_back(160000,1500);
 			osDelay(300);
-			run_left(260000,1500);
+			run_right(104000,1500);
+			
+			open_openmv();
 #endif
 			
 #ifdef RED
@@ -1084,7 +1092,7 @@ void GotoWearhouse(void const * argument)
 			run_left(GW2_LEFT,RUN_SPD);
 			osDelay(300);
 #endif
-			stage = reset;
+			stage = takeLiZhuangBalls;
 		}
     osDelay(1);
   }
@@ -1256,17 +1264,13 @@ void lizhuangTask(void const * argument)
 {
   /* USER CODE BEGIN lizhuangTask */
 	float initial_yaw =0.0;
+	int16_t d_y = 0;
   /* Infinite loop */
   for(;;)
   {
 		if(stage == takeLiZhuangBalls)
 		{
 			initial_yaw = chassis.chassis_yaw_set;
-			close_openmv();
-			prepare();
-			change_pid_slow();
-			chassis_reset();
-			open_openmv();
 		
 		
 			while(chassis.chassis_yaw > initial_yaw - 360.0 && chassis.chassis_yaw < initial_yaw+360.0)//one cycle
@@ -1280,19 +1284,46 @@ void lizhuangTask(void const * argument)
 					chassis.vx_set = 0;
 					chassis.vy_set = 0;
 					chassis.chassis_yaw_set = chassis.chassis_yaw;
+					
+					chassis_reset();
+					
+					while(ball_y < 45 || ball_y > 55)
+					{
+						if(ball_y != 0)
+						{
+							chassis.vy_set = (50 - ball_y) * 12.0f;
+						}
+						osDelay(1);					
+					}
+					chassis.vy_set = 0;
+					d_y = chassis.position_y;
+					
 					close_openmv();
 					clipit();
+					
+					if(d_y > 0) 
+					{
+						in_where = 1;
+						run_front(d_y,1500);
+					}
+					else 
+					{
+						in_where = 2;
+						run_back(d_y,1500);
+					}
+					
 					open_openmv();
 				}
 				osDelay(1);
 			}//endwhile
-			
+			chassis.vx_set = 0;
+			chassis.vy_set = 0;
 			change_pid_nomal();
-			run_back(750000,RUN_SPD);
+			run_back(850000,RUN_SPD);
 			car_reset();
 			
 			change_yaw_pid_turn();
-			chassis.chassis_yaw_set = initial_yaw + 180.0;
+			chassis.chassis_yaw_set = initial_yaw - 180.0;
 			osDelay(3000);
 			change_yaw_pid_run();
 			
@@ -1320,7 +1351,7 @@ void gotodaoduo(void const * argument)
 		if(stage == gotoDaoduo)
 		{
 			change_pid_nomal();
-			run_left(2600000,RUN_SPD);
+			run_left(4160000,RUN_SPD);
 			dingwei();
 			stage = daoduo;
 		}
@@ -1640,11 +1671,11 @@ void prepare()
 	{
 		//todo
 	}
-	else if(stage == takeLiZhuangBalls)
+	else if(stage == gotoWearhouse)
 	{ 
 		servos.top = 135;
 		osDelay(500);
-		angle_lift = 330000;
+		angle_lift = 380000;
 		osDelay(3000);
 		servos.arm = 120;
 		osDelay(500);
@@ -1783,7 +1814,7 @@ void dingwei(void)
 	}
 	else if(stage == gotoWearhouse)
 	{
-		osDelay(3000);
+		osDelay(1000);
 		while(beyoundred[7])
 		{
 			chassis.vx_set = 3000;
@@ -1799,13 +1830,13 @@ void dingwei(void)
 	}
 	else if(stage == gotoDaoduo)
 	{
-		while(beyoundred[4])
+		while(beyoundred[0])
 		{
-			chassis.vx_set = 3000;
+			chassis.vx_set = -3000;
 			osDelay(1);
 		}
 		chassis.vx_set = 0;
-		while(beyoundred[0])
+		while(beyoundred[4])
 		{
 			chassis.vy_set = -3000;
 			osDelay(1);
