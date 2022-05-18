@@ -206,6 +206,7 @@ osThreadId gohomeHandle;
 osThreadId cal_latticeHandle;
 osThreadId DaoduoTaskHandle;
 osThreadId lizhaungtaskHandle;
+osThreadId gotoDaoduoHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -251,6 +252,7 @@ void Gohome(void const * argument);
 void Cal_lattice(void const * argument);
 void daoduoTask(void const * argument);
 void lizhuangTask(void const * argument);
+void gotodaoduo(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -364,6 +366,10 @@ void MX_FREERTOS_Init(void) {
   /* definition and creation of lizhaungtask */
   osThreadDef(lizhaungtask, lizhuangTask, osPriorityIdle, 0, 128);
   lizhaungtaskHandle = osThreadCreate(osThread(lizhaungtask), NULL);
+
+  /* definition and creation of gotoDaoduo */
+  osThreadDef(gotoDaoduo, gotodaoduo, osPriorityIdle, 0, 128);
+  gotoDaoduoHandle = osThreadCreate(osThread(gotoDaoduo), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -1284,14 +1290,43 @@ void lizhuangTask(void const * argument)
 			change_pid_nomal();
 			run_back(750000,RUN_SPD);
 			car_reset();
+			
+			change_yaw_pid_turn();
 			chassis.chassis_yaw_set = initial_yaw + 180.0;
 			osDelay(3000);
+			change_yaw_pid_run();
+			
 			stage = gotoDaoduo;
 		}
 		
     osDelay(1);
   }
   /* USER CODE END lizhuangTask */
+}
+
+/* USER CODE BEGIN Header_gotodaoduo */
+/**
+* @brief Function implementing the gotoDaoduo thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_gotodaoduo */
+void gotodaoduo(void const * argument)
+{
+  /* USER CODE BEGIN gotodaoduo */
+  /* Infinite loop */
+  for(;;)
+  {
+		if(stage == gotoDaoduo)
+		{
+			change_pid_nomal();
+			run_left(2600000,RUN_SPD);
+			dingwei();
+			stage = daoduo;
+		}
+    osDelay(1);
+  }
+  /* USER CODE END gotodaoduo */
 }
 
 /* Private application code --------------------------------------------------*/
@@ -1762,7 +1797,21 @@ void dingwei(void)
 		}
 		chassis.vy_set = 0;
 	}
-	
+	else if(stage == gotoDaoduo)
+	{
+		while(beyoundred[4])
+		{
+			chassis.vx_set = 3000;
+			osDelay(1);
+		}
+		chassis.vx_set = 0;
+		while(beyoundred[0])
+		{
+			chassis.vy_set = -3000;
+			osDelay(1);
+		}
+		chassis.vy_set = 0;
+	}
 }
 
 
