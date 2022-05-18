@@ -1057,6 +1057,10 @@ void GotoWearhouse(void const * argument)
 #ifdef BLUE
 			run_left(8580000,RUN_SPD);
 			dingwei();
+			osDelay(300);
+			run_back(260000,1500);
+			osDelay(300);
+			run_left(260000,1500);
 #endif
 			
 #ifdef RED
