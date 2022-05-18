@@ -1605,6 +1605,20 @@ void prepare()
 	{
 		//todo
 	}
+	else if(stage == takeLiZhuangBalls)
+	{ 
+		servos.top = 135;
+		osDelay(500);
+		angle_lift = 330000;
+		osDelay(3000);
+		servos.arm = 120;
+		osDelay(500);
+		servos.top = 300;
+		servos.bo = 45;
+		servos.clip = 140;
+		servos.move = 280;
+		servos.yindao =  68;
+	}
 	
 	
 }
