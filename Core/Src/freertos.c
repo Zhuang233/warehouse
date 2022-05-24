@@ -187,8 +187,6 @@ int32_t line_err = 0;
 bool far = 1;
 bool moto_clear = false;
 
-uint8_t sq_balls[9] = {0};
-uint8_t sq_tag = 0;
 
 
 /* USER CODE END Variables */
@@ -806,8 +804,6 @@ void PutBallTask(void const * argument)
 						ball_exist_x = check_ball(x,lattice);
 						if(ball_exist_x)
 						{
-							sq_balls[sq_tag] = 16*x + lattice;
-							sq_tag++;
 							put_in(x,lattice);
 						}						
 					}

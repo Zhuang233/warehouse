@@ -4,12 +4,6 @@
 
 Pan_t bodanpan;
 
-uint8_t d_t_check[18] = {0};
-uint8_t d_t_tag = 0;
-uint8_t x_check[9] = {0};
-uint8_t x_tag = 0;
-uint8_t y_check[9] = {0};
-uint8_t y_tag = 0;
 void pan_init()
 {
 	for(uint8_t i = 0;i < 9; i++)
@@ -64,29 +58,20 @@ void put_a_ball(uint8_t x,uint8_t y)
 				d=1;
 				t+=9;
 			}
-			if(t>4)
+			else if(t>4)
 			{
 				d=0;
 				t=9-t;
 			}
-			if(t>0&&t<=4)
+			else if(t>0&&t<=4)
 			{
 				d=1;
 			}
-			if(t<0&&t>=-4)
+			else if(t<0&&t>=-4)
 			{
 				d=0;
 				t=-t;
 			}
-			x_check[x_tag] = x;
-			x_tag++;
-			y_check[y_tag] = y;
-			y_tag++;
-			
-			d_t_check[d_t_tag] = d;
-			d_t_tag++;
-			d_t_check[d_t_tag] = t;
-			d_t_tag++;
 			turn_box(d,t);
 		}
 	}
