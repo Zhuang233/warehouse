@@ -187,6 +187,9 @@ int32_t line_err = 0;
 bool far = 1;
 bool moto_clear = false;
 
+uint8_t sq_balls[9] = {0};
+uint8_t sq_tag = 0;
+
 
 /* USER CODE END Variables */
 osThreadId AllMotoBaseTaskHandle;
@@ -803,6 +806,8 @@ void PutBallTask(void const * argument)
 						ball_exist_x = check_ball(x,lattice);
 						if(ball_exist_x)
 						{
+							sq_balls[sq_tag] = 16*x + lattice;
+							sq_tag++;
 							put_in(x,lattice);
 						}						
 					}
@@ -1303,12 +1308,10 @@ void lizhuangTask(void const * argument)
 					
 					if(d_y > 0) 
 					{
-						in_where = 1;
 						run_front(d_y,1500);
 					}
 					else 
 					{
-						in_where = 2;
 						run_back(d_y,1500);
 					}
 					
@@ -1353,7 +1356,7 @@ void gotodaoduo(void const * argument)
 			change_pid_nomal();
 			run_left(4160000,RUN_SPD);
 			dingwei();
-			stage = daoduo;
+			stage = PutBalls;
 		}
     osDelay(1);
   }
@@ -1842,6 +1845,7 @@ void dingwei(void)
 			osDelay(1);
 		}
 		chassis.vy_set = 0;
+		run_back(1000000,1500);
 	}
 }
 
