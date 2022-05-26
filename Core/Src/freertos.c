@@ -169,7 +169,8 @@ bool first_run = 1;
 bool a_new_ball_in = 0;
 
 bool sw_cal_lattice = false;
-uint8_t lattice = 0;
+uint8_t lattice_daoduo= 0;
+uint8_t layer = 2;
 uint8_t last = 0;
 
 //测试数据
@@ -520,7 +521,7 @@ void FuncTestTask(void const * argument)
 		//start run
 		if(RC_CtrlData.rc.sw2 == 2 && first_wait == true)
 		{
-			stage = gotoFirstPlatform;
+			stage = gotoDaoduo;
 			first_wait = false;
 		}
 		//自动夹取加识别测试
@@ -1154,38 +1155,38 @@ void Cal_lattice(void const * argument)
   for(;;) //1 L   2R 
   {
 
-		if(sw_cal_lattice)
-		{
-			if(chassis.vx_set > 0)
-			{
-				while(beyoundred[8] != 0 && sw_cal_lattice)
-				{
-					osDelay(1);
-				}
-				
-				while(beyoundred[6] != 0 && sw_cal_lattice)
-				{
-					osDelay(1);
-				}
-				 if(sw_cal_lattice) lattice--;
-			}
-			
-			if(chassis.vx_set < 0 && sw_cal_lattice)
-			{
-				while(beyoundred[6] != 0)
-				{
-					osDelay(1);
-				}
-				
-				while(beyoundred[8] != 0 && sw_cal_lattice)
-				{
-					osDelay(1);
-				}
-				
-				if(sw_cal_lattice) lattice++;	
-			}
-					
-		}
+//		if(sw_cal_lattice)
+//		{
+//			if(chassis.vx_set > 0)
+//			{
+//				while(beyoundred[8] != 0 && sw_cal_lattice)
+//				{
+//					osDelay(1);
+//				}
+//				
+//				while(beyoundred[6] != 0 && sw_cal_lattice)
+//				{
+//					osDelay(1);
+//				}
+//				 if(sw_cal_lattice) lattice--;
+//			}
+//			
+//			if(chassis.vx_set < 0 && sw_cal_lattice)
+//			{
+//				while(beyoundred[6] != 0)
+//				{
+//					osDelay(1);
+//				}
+//				
+//				while(beyoundred[8] != 0 && sw_cal_lattice)
+//				{
+//					osDelay(1);
+//				}
+//				
+//				if(sw_cal_lattice) lattice++;	
+//			}
+//					
+//		}
     osDelay(1);
   }
   /* USER CODE END Cal_lattice */
@@ -1203,20 +1204,29 @@ void daoduoTask(void const * argument)
   /* USER CODE BEGIN daoduoTask */
 	int32_t approach_y1 = 0;
 	bool cliped = false;
-	uint8_t layer = 1;
+
   /* Infinite loop */
   for(;;)
   {
 		if(stage == daoduo)
 		{
+			next_lattice_v2(true,1);
 			prepare();
-			next_lattice_v2(1,2);
-			approach(&approach_y1);//todo
-
-			for(uint8_t i=0; i<3; i++)
+			approach(&approach_y1);
+			chassis.vx_set = 0;
+			chassis.vy_set = 0;
+			
+			//SERVOS TEST
+			//-----------------------
+			//clipit_daoduo();
+			//osDelay(2000);
+			//putBall_daoduo();
+			//-----------------------
+			
+			for(uint8_t j = 2; j <= 3; j++)
 			{		
 				
-				for(uint8_t i=0; i<3; i++)
+				for(uint8_t i=1; i <= 3; i++)
 				{
 					if(ball_exist())
 					{
@@ -1226,12 +1236,12 @@ void daoduoTask(void const * argument)
 					}
 					else
 					{
-						if(layer == 1) next_lattice_v2(1,1);
+						if(layer == 2) next_lattice_v2(1,1);
 						else next_lattice_v2(0,1);
 					}
 				}
 				
-				next_lattice_v2(1, 4-lattice);
+				next_lattice_v2(1, 4-lattice_daoduo);
 				if(cliped) 
 				{
 					putBall_daoduo();
@@ -1248,6 +1258,7 @@ void daoduoTask(void const * argument)
 			//end daoduo
 			
 		  car_reset();
+			stage = reset;
 		}
     osDelay(1);
   }
@@ -1352,7 +1363,7 @@ void gotodaoduo(void const * argument)
 			change_pid_nomal();
 			run_left(4160000,RUN_SPD);
 			dingwei();
-			stage = PutBalls;
+			stage = daoduo;
 		}
     osDelay(1);
   }
@@ -1485,21 +1496,23 @@ void next_lattice_v2(bool right, uint8_t number)
 	{
 		if(right)
 		{
-			while(beyoundred[9])
+			while(beyoundred[0])
 			{
 				chassis.vx_set = -WEAR_SPD;
 				osDelay(1);
 			}
 			run_right(780000,WEAR_SPD);
+			lattice_daoduo ++;
 		}
 		else
 		{
-			while(beyoundred[5])
+			while(beyoundred[4])
 			{
 				chassis.vx_set = WEAR_SPD;
 				osDelay(1);
 			}
 			run_left(780000,WEAR_SPD);
+			lattice_daoduo--;
 		}
 	}
 }
@@ -1668,7 +1681,11 @@ void prepare()
 	}
 	else if(stage == daoduo)
 	{
-		//todo
+		servos.top = 285;
+		servos.bo = 142;
+		servos.arm = 38;
+		angle_lift = 84672;
+		osDelay(800);
 	}
 	else if(stage == gotoWearhouse)
 	{ 
@@ -1734,33 +1751,65 @@ void clipit()
 
 bool ball_exist(void)
 {
-	open_openmv();
-	osDelay(50);
-	if(ball_x || ball_y)
-	{
-		osDelay(50);
-		if(ball_x || ball_y) 
-		{
-			close_openmv();
-			return true;
-		}
-	}
-	close_openmv();
-	return false;
+	
+	if(lattice_daoduo == 2)
+		return true;
+	else return false;
+//	open_openmv();
+//	osDelay(50);
+//	if(ball_x || ball_y)
+//	{
+//		osDelay(50);
+//		if(ball_x || ball_y) 
+//		{
+//			close_openmv();
+//			return true;
+//		}
+//	}
+//	close_openmv();
+//	return false;
 }
 
 
 void clipit_daoduo(void)
 {
-	//todo
+	if(layer == 2) angle_lift = 155866;
+	else angle_lift = 500000;
+	servos.clip = 109;
+	servos.top = 120;
+	osDelay(1800);
+	servos.arm = 116;
+	osDelay(500);
+	servos.clip = 127;
+	osDelay(1000);
+	servos.top = 300;
+	osDelay(1800);
+	servos.arm = 108;
+	osDelay(300);
+	servos.clip = 155;
+	osDelay(300);
+	servos.arm = 116;
+	osDelay(300);
+	servos.top = 50;
+	osDelay(1800);
 }
 void putBall_daoduo(void)
 {
-	//todo
+	servos.top = 300;
+	osDelay(1800);
+	servos.clip = 127;
+	osDelay(300);
+	servos.top = 120;
+	osDelay(1000);
+	servos.clip = 109;
+	osDelay(800);
+	servos.arm = 38;
+	osDelay(500);
 }
 void reset_daoduo(void)
 {
-	//todo
+	angle_lift = 444948;
+	osDelay(1000);
 }
 
 
