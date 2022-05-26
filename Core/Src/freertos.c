@@ -36,6 +36,7 @@
 #include "lineInfo.h"
 #include "delay.h"
 #include "sr04.h"
+#include "QRCode.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -103,7 +104,7 @@ enum Stage
 #define GH1_RINGT 8820000
 #define GH2_YAW 0
 #define GH3_LEFT 2414980
-#define GH4_BACK 1972905
+#define GH4_BACK 972905
 
 #endif
 
@@ -173,6 +174,8 @@ bool sw_cal_lattice = false;
 uint8_t lattice_daoduo= 0;
 uint8_t layer = 2;
 uint8_t last = 0;
+
+uint8_t rwm_sq[3] = {0};
 
 //测试数据
 int a = 6290000,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q;
@@ -792,6 +795,28 @@ void PutBallTask(void const * argument)
 				//走到下一格
 				next_lattice_v2(true,1);
 				lattice++;
+				run_back(1000000,1500);
+				osDelay(3000);
+				run_front(1000000,1500);
+				rwm_sq[lattice-1] = QRCode_data[0] - 0x30;
+				//---------------
+				//temp_change
+				if(rwm_sq[lattice-1] == 1)
+				{
+					rwm_sq[lattice-1] = 3;
+				}
+				else if(rwm_sq[lattice-1] == 2)
+				{
+					rwm_sq[lattice-1] = 1;
+				}
+				else if(rwm_sq[lattice-1] == 3)
+				{
+					rwm_sq[lattice-1] = 2;
+				}
+				
+				//---------------
+				
+				
 				//查看当前列有无球 有就放没有就跳过
 				ball_exist_y = check_pan(lattice);
 				if(ball_exist_y)
@@ -803,12 +828,25 @@ void PutBallTask(void const * argument)
 					chassis.vy_set = 0;
 					for(uint8_t x = 1 ; x <=3 ; x++)
 					{
-						ball_exist_x = check_ball(x,lattice);
-						if(ball_exist_x)
+						if(x == 1)
 						{
-							put_in(x,lattice);
-						}						
-					}
+							
+							ball_exist_x = check_ball(x,rwm_sq[lattice-1]);
+							if(ball_exist_x)
+							{
+								put_in(x,rwm_sq[lattice - 1]);
+							}
+						}
+						else
+						{
+							ball_exist_x = check_ball(x,lattice);
+							if(ball_exist_x)
+							{
+								put_in(x,lattice);
+							}
+						}
+						
+					}//endfor
 					run_back(approach_y,WEAR_BACK_SPD);
 
 				}
@@ -1332,6 +1370,8 @@ void gotodaoduo(void const * argument)
   {
 		if(stage == gotoDaoduo)
 		{
+			chassis.chassis_yaw_set += 3.0;
+			osDelay(500);
 			change_pid_nomal();
 			run_left(4160000,RUN_SPD);
 			dingwei();
@@ -1484,7 +1524,7 @@ void next_lattice_v2(bool right, uint8_t number)
 				chassis.vx_set = WEAR_SPD;
 				osDelay(1);
 			}
-			run_left(780000,WEAR_SPD);
+			run_left(650000,WEAR_SPD);
 			lattice_daoduo--;
 		}
 	}
@@ -1527,7 +1567,7 @@ void put_in(uint8_t x , uint8_t y)
 	if(x == 3) angle_lift = 0;
 	put_a_ball(x,y);
 	osDelay(2000);
-	servos.move = 40;
+	servos.move = 60;
 	osDelay(1200);
 	servos.clip = 155;
 	osDelay(300);
@@ -1664,7 +1704,7 @@ void prepare()
 	{ 
 		servos.top = 135;
 		osDelay(500);
-		angle_lift = 380000;
+		angle_lift = 340000;
 		osDelay(3000);
 		servos.arm = 120;
 		osDelay(500);
