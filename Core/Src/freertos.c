@@ -51,6 +51,7 @@ enum Stage
 	takeLiZhuangBalls,
 	gotoDaoduo,
 	daoduo,
+	gotoputball,
 	PutBalls,
 	goHome
 } stage;
@@ -205,7 +206,7 @@ osThreadId ladderTaskHandle;
 osThreadId gotoSecondHandle;
 osThreadId gotowearhouseHandle;
 osThreadId gohomeHandle;
-osThreadId cal_latticeHandle;
+osThreadId gotoputballHandle;
 osThreadId DaoduoTaskHandle;
 osThreadId lizhaungtaskHandle;
 osThreadId gotoDaoduoHandle;
@@ -251,7 +252,7 @@ void LadderTask(void const * argument);
 void GotoSecond(void const * argument);
 void GotoWearhouse(void const * argument);
 void Gohome(void const * argument);
-void Cal_lattice(void const * argument);
+void GotoPutball(void const * argument);
 void daoduoTask(void const * argument);
 void lizhuangTask(void const * argument);
 void gotodaoduo(void const * argument);
@@ -357,9 +358,9 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(gohome, Gohome, osPriorityIdle, 0, 128);
   gohomeHandle = osThreadCreate(osThread(gohome), NULL);
 
-  /* definition and creation of cal_lattice */
-  osThreadDef(cal_lattice, Cal_lattice, osPriorityIdle, 0, 128);
-  cal_latticeHandle = osThreadCreate(osThread(cal_lattice), NULL);
+  /* definition and creation of gotoputball */
+  osThreadDef(gotoputball, GotoPutball, osPriorityIdle, 0, 128);
+  gotoputballHandle = osThreadCreate(osThread(gotoputball), NULL);
 
   /* definition and creation of DaoduoTask */
   osThreadDef(DaoduoTask, daoduoTask, osPriorityIdle, 0, 128);
@@ -521,7 +522,7 @@ void FuncTestTask(void const * argument)
 		//start run
 		if(RC_CtrlData.rc.sw2 == 2 && first_wait == true)
 		{
-			stage = gotoDaoduo;
+			stage = gotoFirstPlatform;
 			first_wait = false;
 		}
 		//自动夹取加识别测试
@@ -1139,57 +1140,28 @@ void Gohome(void const * argument)
   /* USER CODE END Gohome */
 }
 
-/* USER CODE BEGIN Header_Cal_lattice */
+/* USER CODE BEGIN Header_GotoPutball */
 /**
-* @brief Function implementing the cal_lattice thread.
+* @brief Function implementing the gotoputball thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_Cal_lattice */
-void Cal_lattice(void const * argument)
+/* USER CODE END Header_GotoPutball */
+void GotoPutball(void const * argument)
 {
-  /* USER CODE BEGIN Cal_lattice */
-	uint8_t flag = 0;
-	uint8_t left_or_right = 0;
+  /* USER CODE BEGIN GotoPutball */
   /* Infinite loop */
-  for(;;) //1 L   2R 
+  for(;;)
   {
-
-//		if(sw_cal_lattice)
-//		{
-//			if(chassis.vx_set > 0)
-//			{
-//				while(beyoundred[8] != 0 && sw_cal_lattice)
-//				{
-//					osDelay(1);
-//				}
-//				
-//				while(beyoundred[6] != 0 && sw_cal_lattice)
-//				{
-//					osDelay(1);
-//				}
-//				 if(sw_cal_lattice) lattice--;
-//			}
-//			
-//			if(chassis.vx_set < 0 && sw_cal_lattice)
-//			{
-//				while(beyoundred[6] != 0)
-//				{
-//					osDelay(1);
-//				}
-//				
-//				while(beyoundred[8] != 0 && sw_cal_lattice)
-//				{
-//					osDelay(1);
-//				}
-//				
-//				if(sw_cal_lattice) lattice++;	
-//			}
-//					
-//		}
+		if(stage == gotoputball)
+		{
+			run_left(6240000,6500);
+			dingwei();
+			stage = PutBalls;
+		}
     osDelay(1);
   }
-  /* USER CODE END Cal_lattice */
+  /* USER CODE END GotoPutball */
 }
 
 /* USER CODE BEGIN Header_daoduoTask */
@@ -1258,7 +1230,7 @@ void daoduoTask(void const * argument)
 			//end daoduo
 			
 		  car_reset();
-			stage = reset;
+			stage = gotoputball;
 		}
     osDelay(1);
   }
@@ -1407,7 +1379,8 @@ void car_reset()
 	}
 	else if(stage == daoduo)
 	{
-		//todo
+		angle_lift = 0;
+		osDelay(1000);
 	}
 	else if(stage == takeLiZhuangBalls)//maybe to change
 	{
@@ -1774,7 +1747,7 @@ bool ball_exist(void)
 void clipit_daoduo(void)
 {
 	if(layer == 2) angle_lift = 155866;
-	else angle_lift = 500000;
+	else angle_lift = 520000;
 	servos.clip = 109;
 	servos.top = 120;
 	osDelay(1800);
@@ -1877,6 +1850,22 @@ void dingwei(void)
 		chassis.vy_set = 0;
 	}
 	else if(stage == gotoDaoduo)
+	{
+		while(beyoundred[0])
+		{
+			chassis.vx_set = -3000;
+			osDelay(1);
+		}
+		chassis.vx_set = 0;
+		while(beyoundred[4])
+		{
+			chassis.vy_set = -3000;
+			osDelay(1);
+		}
+		chassis.vy_set = 0;
+		run_back(1000000,1500);
+	}
+	else if(stage == gotoputball)
 	{
 		while(beyoundred[0])
 		{

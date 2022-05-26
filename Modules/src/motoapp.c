@@ -44,7 +44,7 @@
 
 //龙门架
 #define K_d_angle 0.0f  //龙门架电机同步补偿系数
-#define ANGLE_LIFT_MAX 500000
+#define ANGLE_LIFT_MAX 520000
 #define ANGLE_LIFT_MIN 0
 
 #define PID_LIFT_SPD_KP 1.0f
