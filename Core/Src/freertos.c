@@ -104,7 +104,7 @@ enum Stage
 #define GH1_RINGT 8820000
 #define GH2_YAW 0
 #define GH3_LEFT 2414980
-#define GH4_BACK 972905
+#define GH4_BACK 1572905
 
 #endif
 
@@ -177,6 +177,8 @@ uint8_t last = 0;
 
 uint8_t rwm_sq[3] = {0};
 
+uint8_t sw1 = 0,sw2 = 0;
+
 //测试数据
 int a = 6290000,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q;
 uint8_t x[3] = {1,2,3};
@@ -191,6 +193,7 @@ bool start_output = 0;
 int32_t line_err = 0;
 bool far = 1;
 bool moto_clear = false;
+
 
 
 
@@ -525,7 +528,7 @@ void FuncTestTask(void const * argument)
 		//start run
 		if(RC_CtrlData.rc.sw2 == 2 && first_wait == true)
 		{
-			stage = gotoFirstPlatform;
+			stage = gotoDaoduo;
 			first_wait = false;
 		}
 		//自动夹取加识别测试
@@ -795,27 +798,10 @@ void PutBallTask(void const * argument)
 				//走到下一格
 				next_lattice_v2(true,1);
 				lattice++;
-				run_back(1000000,1500);
-				osDelay(3000);
-				run_front(1000000,1500);
+				run_back(500000,1500);
+				osDelay(800);
+				run_front(500000,1500);
 				rwm_sq[lattice-1] = QRCode_data[0] - 0x30;
-				//---------------
-				//temp_change
-				if(rwm_sq[lattice-1] == 1)
-				{
-					rwm_sq[lattice-1] = 3;
-				}
-				else if(rwm_sq[lattice-1] == 2)
-				{
-					rwm_sq[lattice-1] = 1;
-				}
-				else if(rwm_sq[lattice-1] == 3)
-				{
-					rwm_sq[lattice-1] = 2;
-				}
-				
-				//---------------
-				
 				
 				//查看当前列有无球 有就放没有就跳过
 				ball_exist_y = check_pan(lattice);
@@ -826,7 +812,7 @@ void PutBallTask(void const * argument)
 					osDelay(300);
 					approach(&approach_y);
 					chassis.vy_set = 0;
-					for(uint8_t x = 1 ; x <=3 ; x++)
+					for(uint8_t x = 3; x >=1; x--)
 					{
 						if(x == 1)
 						{
@@ -903,7 +889,7 @@ void GotoFirstPlatForm(void const * argument)
 			osDelay(500);
 			change_yaw_pid_turn();
 			chassis.chassis_yaw_set = GF3_YAW;
-			osDelay(2500);
+			osDelay(1500);
 			change_yaw_pid_run();
 			run_right(GF4_RIGHT,RUN_SPD);
 			dingwei();
@@ -1264,7 +1250,7 @@ void daoduoTask(void const * argument)
 					layer++;
 				}
 				
-		  }
+		  }	
 			//end daoduo
 			
 		  car_reset();
@@ -1370,7 +1356,7 @@ void gotodaoduo(void const * argument)
   {
 		if(stage == gotoDaoduo)
 		{
-			chassis.chassis_yaw_set += 3.0;
+			//chassis.chassis_yaw_set += 3.0;
 			osDelay(500);
 			change_pid_nomal();
 			run_left(4160000,RUN_SPD);
@@ -1562,21 +1548,20 @@ void approach(int32_t * approach_y)
 
 void put_in(uint8_t x , uint8_t y)
 {
-	if(x == 1) angle_lift = 500000;
+	if(x == 1) angle_lift = 0;
 	if(x == 2) angle_lift = 366448;
-	if(x == 3) angle_lift = 0;
+	if(x == 3) angle_lift = 500000;
 	put_a_ball(x,y);
-	osDelay(2000);
+	osDelay(1000);
 	servos.move = 60;
 	osDelay(1200);
 	servos.clip = 155;
-	osDelay(300);
+	osDelay(150);
 	servos.move = 280;
-	osDelay(1200);
-	if(x==1) servos.arm = 135;
+	if(x==3) servos.arm = 135;
 	else servos.arm = 100;
 	osDelay(700);
-	servos.top = 300;
+	servos.top = 270;
 	osDelay(1000);
 	servos.clip = 140;
 	osDelay(300);
@@ -1694,7 +1679,7 @@ void prepare()
 	}
 	else if(stage == daoduo)
 	{
-		servos.top = 285;
+		servos.top = 240;
 		servos.bo = 142;
 		servos.arm = 38;
 		angle_lift = 84672;
@@ -1764,10 +1749,52 @@ void clipit()
 
 bool ball_exist(void)
 {
+	if(RC_CtrlData.rc.sw1 == 1)
+	{
+		sw1 = 1;
+	}
+	else	if(RC_CtrlData.rc.sw1 == 2)
+	{
+		sw1 = 3;
+	}
+	else if(RC_CtrlData.rc.sw1 == 3)
+	{
+		sw1 = 2;
+	}
+	if(RC_CtrlData.rc.sw2 == 1)
+	{
+		sw2 = 1;
+	}
+	else	if(RC_CtrlData.rc.sw2 == 2)
+	{
+		sw2 = 3;
+	}
+	else if(RC_CtrlData.rc.sw2 == 3)
+	{
+		sw2 = 2;
+	}
 	
-	if(lattice_daoduo == 2)
-		return true;
-	else return false;
+	
+	if(layer == 2)
+	{
+		if(sw1 == lattice_daoduo)
+		{
+			return true;
+		}
+		return false;
+	}
+	else if(layer == 3)
+	{
+		if(sw2 == lattice_daoduo)
+		{
+			return true;
+		}
+		return false;
+	}
+//	if(lattice_daoduo == 2)
+//		return true;
+//	else return false;
+	
 //	open_openmv();
 //	osDelay(50);
 //	if(ball_x || ball_y)
@@ -1808,7 +1835,7 @@ void clipit_daoduo(void)
 }
 void putBall_daoduo(void)
 {
-	servos.top = 300;
+	servos.top = 270;
 	osDelay(1800);
 	servos.clip = 127;
 	osDelay(300);
