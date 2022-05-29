@@ -75,9 +75,9 @@ enum Stage
 #define GF3_YAW 90
 #define GF4_RIGHT 4600000
 
-#define LAD_FRONT 192000 //tochange
+#define LAD_FRONT 192000 
 #define LAD_TOTAL_DISTANCE -5771216
-#define LAD1_DIS -2081362
+#define LAD1_DIS -2001362
 #define LAD2_DIS -4398873
 #define LAD1_HIGH 170000
 #define LAD2_HIGH 450000
@@ -101,10 +101,10 @@ enum Stage
 #define APPROACH_SPD 1500
 #define WEAR_BACK_SPD 1500
 
-#define GH1_RINGT 8820000
+#define GH1_RINGT 6000000
 #define GH2_YAW 0
 #define GH3_LEFT 2414980
-#define GH4_BACK 1572905
+#define GH4_BACK 2372905
 
 #endif
 
@@ -178,6 +178,7 @@ uint8_t last = 0;
 uint8_t rwm_sq[3] = {0};
 
 uint8_t sw1 = 0,sw2 = 0;
+int found_ball_time = 0;
 
 //测试数据
 int a = 6290000,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q;
@@ -442,7 +443,7 @@ void ChassisTask(void const * argument)
 			osDelay(2000);
 			sw = 1;
 		}
-		if(RC_CtrlData.rc.sw1==3)
+		if(0)//(RC_CtrlData.rc.sw1==3)
 		{
 		chassis.vx_set=-RC_CtrlData.rc.ch3*10;
 		chassis.vy_set=-RC_CtrlData.rc.ch4*10;
@@ -503,7 +504,7 @@ void PanTask(void const * argument)
   /* USER CODE END PanTask */
 }
 
-/* USER CODE BEGIN Header_FuncTestTask */
+/* USER CODE BEGIN Header_FuncTestTask */ 
 /**
 * @brief Function implementing the FuncTestTasks thread.
 * @param argument: Not used
@@ -528,7 +529,7 @@ void FuncTestTask(void const * argument)
 		//start run
 		if(RC_CtrlData.rc.sw2 == 2 && first_wait == true)
 		{
-			stage = gotoDaoduo;
+			stage = gotoFirstPlatform;
 			first_wait = false;
 		}
 		//自动夹取加识别测试
@@ -679,7 +680,6 @@ void Servotask(void const * argument)
 void BarPlatform(void const * argument)
 {
   /* USER CODE BEGIN BarPlatform */
-	bool Aimed = false;
 	uint8_t ball_num = 0;
   /* Infinite loop */
   for(;;)
@@ -957,6 +957,11 @@ void LadderTask(void const * argument)
 					ladder = 3;
 				}
 				
+				if(chassis.position_x < LAD2_DIS+250000 && chassis.position_x > LAD2_DIS)//防止阶梯未降下就空夹（范围判断）
+				{
+					ball_x = 0;
+					ball_y = 0;
+				}
 				
 				if(ball_x == 0 || ball_y == 0)//球没出现则平移
 				{
@@ -965,19 +970,46 @@ void LadderTask(void const * argument)
 				}
 				else
 				{
-					if(chassis.position_x > LAD2_DIS+150000 || chassis.position_x < LAD2_DIS)
-					{		
-						if(!aimed2) Aim(&aimed2);
-						else 
-						{	
-								aimed2 = 0;
-								chassis.vx_set = 0;
-								chassis.vy_set = 0;
-								close_openmv();
-								clipit();
-								open_openmv();
-						}
-					}
+		
+									if(!aimed2) 
+									{
+										
+										if((chassis.position_x < LAD1_DIS + 150000 && chassis.position_x > LAD1_DIS - 150000) || (chassis.position_x < LAD2_DIS + 150000 && chassis.position_x > LAD2_DIS - 150000))// 角落球,强行瞄准模式（不允许升降打断）
+										{
+											while(!aimed2)
+											{
+												Aim(&aimed2);
+												osDelay(1);
+											}
+											goto CLIP;
+											
+										}
+										else//普通瞄准（只关心当前）
+										{
+											Aim(&aimed2);
+										}
+									}
+									else 
+									{	
+CLIP:									aimed2 = 0;
+											chassis.vx_set = 0;
+											chassis.vy_set = 0;
+											close_openmv();
+											clipit();
+											if(chassis.position_x < LAD1_DIS + 150000 && chassis.position_x > LAD1_DIS - 150000) //平台1的角落球,特殊处理
+											{
+												while(chassis.position_x < LAD1_DIS + 250000)
+												{
+													chassis.vx_set = LAD_SPD;//回走
+													osDelay(1);
+												}
+												chassis.vx_set = 0;
+												angle_lift = LAD2_HIGH;
+												osDelay(500);
+											}
+											open_openmv();
+									}
+						
 				}
 				osDelay(1);
 			}//endwhile
@@ -1025,12 +1057,12 @@ void LadderTask(void const * argument)
 			}//endwhile
 #endif
 			chassis.vx_set = 0;
-			ladder = 0;			
-			change_pid_nomal();
-			run_back(LAD_BACK,RUN_SPD);
+			ladder = 0;
+			car_reset();			
+			run_back(LAD_BACK,1500);
 			run_left(520000,1500);
 			dingwei();
-			car_reset();
+			change_pid_nomal();
 			stage = gotoSecondPlatform;
 		}//endstage
     osDelay(1);
@@ -1142,7 +1174,9 @@ void Gohome(void const * argument)
 		if(stage == goHome)
 		{
 #ifdef BLUE
+			run_back(500000,RUN_SPD);
 			run_right(GH1_RINGT,RUN_SPD);
+			dingwei();
 			change_yaw_pid_turn();
 			chassis.chassis_yaw_set = GH2_YAW;
 			osDelay(2500);
@@ -1181,6 +1215,7 @@ void GotoPutball(void const * argument)
 		{
 			run_left(6240000,6500);
 			dingwei();
+			run_right(520000,1500);
 			stage = PutBalls;
 		}
     osDelay(1);
@@ -1222,7 +1257,7 @@ void daoduoTask(void const * argument)
 			for(uint8_t j = 2; j <= 3; j++)
 			{		
 				
-				for(uint8_t i=1; i <= 3; i++)
+				for(uint8_t i=1; i <= 4; i++)
 				{
 					if(ball_exist())
 					{
@@ -1361,6 +1396,7 @@ void gotodaoduo(void const * argument)
 			change_pid_nomal();
 			run_left(4160000,RUN_SPD);
 			dingwei();
+			run_right(520000,1500);
 			stage = daoduo;
 		}
     osDelay(1);
@@ -1561,7 +1597,7 @@ void put_in(uint8_t x , uint8_t y)
 	if(x==3) servos.arm = 135;
 	else servos.arm = 100;
 	osDelay(700);
-	servos.top = 270;
+	servos.top = 290;
 	osDelay(1000);
 	servos.clip = 140;
 	osDelay(300);
@@ -1719,12 +1755,12 @@ void boit()
 
 void clipit()
 {
+	servos.bo = 100;
 	servos.arm = 103;
 	osDelay(300);
 	servos.clip = 155;
 	osDelay(300);
 	servos.arm = 120;
-	servos.bo = 100;
 	osDelay(300);
 	servos.top = 50;
 	osDelay(800);
@@ -1808,6 +1844,7 @@ bool ball_exist(void)
 //	}
 //	close_openmv();
 //	return false;
+	return false;
 }
 
 
@@ -1824,7 +1861,7 @@ void clipit_daoduo(void)
 	osDelay(1000);
 	servos.top = 300;
 	osDelay(1800);
-	servos.arm = 108;
+	servos.arm = 110;
 	osDelay(300);
 	servos.clip = 155;
 	osDelay(300);
@@ -1933,6 +1970,22 @@ void dingwei(void)
 		run_back(1000000,1500);
 	}
 	else if(stage == gotoputball)
+	{
+		while(beyoundred[0])
+		{
+			chassis.vx_set = -3000;
+			osDelay(1);
+		}
+		chassis.vx_set = 0;
+		while(beyoundred[4])
+		{
+			chassis.vy_set = -3000;
+			osDelay(1);
+		}
+		chassis.vy_set = 0;
+		run_back(1000000,1500);
+	}
+	else if(stage == goHome)
 	{
 		while(beyoundred[0])
 		{
