@@ -1527,11 +1527,24 @@ void find_lattice()
 
 void next_lattice_v2(bool right, uint8_t number)
 {
+	uint8_t beyong_red[2] = {9,5};
+	
+	if(stage == daoduo)
+	{
+		beyong_red[0] = 0;
+		beyong_red[1] = 4;
+	}
+	else 	if(stage == PutBalls)
+	{
+		beyong_red[0] = 9;
+		beyong_red[1] = 5;
+	}
+	
 	for(uint8_t i=0; i<number; i++)
 	{
 		if(right)
 		{
-			while(beyoundred[0])
+			while(beyoundred[beyong_red[0]])
 			{
 				chassis.vx_set = -WEAR_SPD;
 				osDelay(1);
@@ -1541,7 +1554,7 @@ void next_lattice_v2(bool right, uint8_t number)
 		}
 		else
 		{
-			while(beyoundred[4])
+			while(beyoundred[beyong_red[1]])
 			{
 				chassis.vx_set = WEAR_SPD;
 				osDelay(1);
