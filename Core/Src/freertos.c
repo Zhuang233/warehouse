@@ -103,7 +103,7 @@ enum Stage
 
 #define GH1_RINGT 6000000
 #define GH2_YAW 0
-#define GH3_LEFT 2414980
+#define GH3_LEFT 2300000
 #define GH4_BACK 2372905
 
 #endif
@@ -1175,6 +1175,7 @@ void Gohome(void const * argument)
 		{
 #ifdef BLUE
 			run_back(500000,RUN_SPD);
+			car_reset();
 			run_right(GH1_RINGT,RUN_SPD);
 			dingwei();
 			change_yaw_pid_turn();
@@ -1241,6 +1242,7 @@ void daoduoTask(void const * argument)
   {
 		if(stage == daoduo)
 		{
+			change_pid_slow();
 			next_lattice_v2(true,1);
 			prepare();
 			approach(&approach_y1);
@@ -1289,6 +1291,7 @@ void daoduoTask(void const * argument)
 			//end daoduo
 			
 		  car_reset();
+			change_pid_nomal();
 			stage = gotoputball;
 		}
     osDelay(1);
@@ -1359,8 +1362,8 @@ void lizhuangTask(void const * argument)
 			}//endwhile
 			chassis.vx_set = 0;
 			chassis.vy_set = 0;
+			run_back(850000,1500);
 			change_pid_nomal();
-			run_back(850000,RUN_SPD);
 			car_reset();
 			
 			change_yaw_pid_turn();
@@ -1455,6 +1458,18 @@ void car_reset()
 		servos.bo = 46;
 		servos.top = 50;
 	}
+	else if(stage == goHome)
+	{
+		angle_lift = 0;
+		servos.arm = 120;
+		servos.move = 280;
+		osDelay(800);
+		servos.yindao = 160;
+		servos.clip = 80;
+		servos.bo = 46;
+		osDelay(500);
+		servos.arm = 30;
+	}
 }
 
 void Aim(bool* Aimed)
@@ -1528,7 +1543,7 @@ void find_lattice()
 void next_lattice_v2(bool right, uint8_t number)
 {
 	uint8_t beyong_red[2] = {9,5};
-	
+	change_pid_slow();
 	if(stage == daoduo)
 	{
 		beyong_red[0] = 0;
@@ -1549,7 +1564,7 @@ void next_lattice_v2(bool right, uint8_t number)
 				chassis.vx_set = -WEAR_SPD;
 				osDelay(1);
 			}
-			run_right(780000,WEAR_SPD);
+			run_right(650000,WEAR_SPD);
 			lattice_daoduo ++;
 		}
 		else
@@ -1559,10 +1574,11 @@ void next_lattice_v2(bool right, uint8_t number)
 				chassis.vx_set = WEAR_SPD;
 				osDelay(1);
 			}
-			run_left(650000,WEAR_SPD);
+			run_left(780000,WEAR_SPD);
 			lattice_daoduo--;
 		}
 	}
+	change_pid_nomal();
 }
 
 
@@ -1585,11 +1601,13 @@ void Aim_lattice(int32_t first_line_angle,int32_t second_line_angle,bool* found)
 void approach(int32_t * approach_y)
 {
 	chassis_reset();
+	change_pid_slow();
 	while(far)
 	{
 		chassis.vy_set = -APPROACH_SPD;
 		osDelay(1);
 	}
+	change_pid_nomal();
 	*approach_y = -chassis.position_y;
 }
 
@@ -1598,7 +1616,7 @@ void approach(int32_t * approach_y)
 void put_in(uint8_t x , uint8_t y)
 {
 	if(x == 1) angle_lift = 0;
-	if(x == 2) angle_lift = 366448;
+	if(x == 2) angle_lift = 386448;
 	if(x == 3) angle_lift = 500000;
 	put_a_ball(x,y);
 	osDelay(1000);
@@ -1607,10 +1625,10 @@ void put_in(uint8_t x , uint8_t y)
 	servos.clip = 155;
 	osDelay(150);
 	servos.move = 280;
-	if(x==3) servos.arm = 135;
+	if(x==3) servos.arm = 116;
 	else servos.arm = 100;
 	osDelay(700);
-	servos.top = 290;
+	servos.top = 300;
 	osDelay(1000);
 	servos.clip = 140;
 	osDelay(300);
@@ -1739,7 +1757,7 @@ void prepare()
 		servos.top = 135;
 		osDelay(500);
 		angle_lift = 340000;
-		osDelay(3000);
+		osDelay(1500);
 		servos.arm = 120;
 		osDelay(500);
 		servos.top = 300;
@@ -1870,7 +1888,7 @@ void clipit_daoduo(void)
 	osDelay(1800);
 	servos.arm = 116;
 	osDelay(500);
-	servos.clip = 127;
+	servos.clip = 134;
 	osDelay(1000);
 	servos.top = 300;
 	osDelay(1800);
