@@ -63,7 +63,7 @@ enum Stage
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define BLUE  //RED OR BLUE
+#define RED  //RED OR BLUE
 
 
 #ifdef BLUE
@@ -85,17 +85,6 @@ enum Stage
 #define LAD_SPD 1500
 #define LAD_BACK 1076000
 
-#define GS1_RIGHT 5709349
-#define GS2_YAW 0
-#define GS3_FRONT 1000000
-
-#define BAR_TOTAL_DISTANCE 5771216
-#define BAR_SPD 1500
-#define BAR_BACK 1194242
-
-#define GW1_YAW -90
-#define GW2_RIGHT 5000000
-
 #define WEAR_SPD 1500
 #define Aim_lattice_SPD 1500 //+
 #define APPROACH_SPD 1500
@@ -112,40 +101,29 @@ enum Stage
 
 #define RUN_SPD 6500
 #define GF1_FRONT 1822905
-#define GF2_RIGHT 2914980
+#define GF2_RIGHT 3018980
 #define GF3_YAW -90
-#define GF4_LEFT 5700000
+#define GF4_LEFT 4600000
 
-#define LAD_FRONT 650000
+#define LAD_FRONT 192000
 #define LAD_TOTAL_DISTANCE 5771216
-#define LAD1_DIS 2444382
-#define LAD2_DIS 4830186
+#define LAD1_DIS 1600000
+#define LAD2_DIS 4030000
 #define LAD1_HIGH 330000
 #define LAD2_HIGH 450000
 #define LAD3_HIGH 170000
 #define LAD_SPD 1500
-#define LAD_BACK 650000
+#define LAD_BACK 1076000
 
-#define GS1_LEFT 5709349
-#define GS2_YAW 0
-#define GS3_FRONT 1244242
-
-#define BAR_TOTAL_DISTANCE 5771216
-#define BAR_SPD 1500
-#define BAR_BACK 1194242
-
-#define GW1_YAW 90
-#define GW2_LEFT 5909349+6240000
-
-#define WEAR_SPD -1500
+#define WEAR_SPD 1500
 #define Aim_lattice_SPD 1500 //+
 #define APPROACH_SPD 1500
 #define WEAR_BACK_SPD 1500
 
-#define GH1_LEFT 8820000+6240000
+#define GH1_LEFT 52000*70
 #define GH2_YAW 0
-#define GH3_RIGHT 2414980
-#define GH4_BACK 1972905
+#define GH3_RIGHT 2300000
+#define GH4_BACK  2372905
 
 #endif
 
@@ -691,11 +669,11 @@ void BarPlatform(void const * argument)
 			change_pid_slow();
 			osDelay(2000);
 			chassis_reset();
-			run_front(1364000,1000);//tochange ??
+			run_front(1364000,1000);
 			servos.bo = 50;
 			osDelay(500);
 			open_openmv();
-#ifdef BLUE
+
 			
 			while(ball_num < 5)
 			{
@@ -709,60 +687,17 @@ void BarPlatform(void const * argument)
 			car_reset();
 			run_front(1040000,4000);
 			change_yaw_pid_turn();
+			#ifdef BLUE
 			chassis.chassis_yaw_set = 90;
+			#endif
+			
+			#ifdef RED
+			chassis.chassis_yaw_set = -90;
+			#endif
 			osDelay(2500);
 			change_yaw_pid_run();
-//			while(chassis.position_x > - BAR_TOTAL_DISTANCE)
-//			{
-//					//球没出现则平移
-//					if(ball_x == 0 || ball_y == 0)
-//					{						
-//						chassis.vx_set = -BAR_SPD;
-//					}
-//					//球出现则开始瞄准 瞄准完毕则自动夹取
-//					else
-//					{
-//						chassis.vx_set = 0;
-//						chassis.vy_set = 0;
-//						if(!Aimed) Aim(&Aimed);
-//						else 
-//						{
-//							Aimed = 0;
-//							chassis.vx_set = 0;
-//							chassis.vy_set = 0;
-//							boit();
-//						}
-//					}
-//					osDelay(1);
-//			}//endwhile
-#endif			
 			
-#ifdef RED
-			while(chassis.position_x <  BAR_TOTAL_DISTANCE)
-			{
-					//球没出现则平移
-					if(ball_x == 0 || ball_y == 0)
-					{						
-						chassis.vx_set = BAR_SPD;
-					}
-					//球出现则开始瞄准 瞄准完毕则自动夹取
-					else
-					{
-						chassis.vx_set = 0;
-						chassis.vy_set = 0;
-						if(!Aimed) Aim(&Aimed);
-						else 
-						{
-							Aimed = 0;
-							chassis.vx_set = 0;
-							chassis.vy_set = 0;
-							boit();
-						}
-					}
-					osDelay(1);
-			}//endwhile
-#endif
-			
+
 //			chassis.vx_set = 0;
 //			run_back(BAR_BACK,RUN_SPD);
 //			car_reset();
@@ -899,9 +834,12 @@ void GotoFirstPlatForm(void const * argument)
 			run_front(GF1_FRONT,RUN_SPD);
 			run_right(GF2_RIGHT,RUN_SPD);
 			osDelay(500);
+			change_yaw_pid_turn();
 			chassis.chassis_yaw_set = GF3_YAW;
-			osDelay(1000);
+			osDelay(1500);
+			change_yaw_pid_run();
 			run_left(GF4_LEFT,RUN_SPD);
+			dingwei();
 #endif
 			stage = takeFirstPlatformBalls;
 			//stage = reset;
@@ -1013,6 +951,14 @@ CLIP:									aimed2 = 0;
 				}
 				osDelay(1);
 			}//endwhile
+			
+			chassis.vx_set = 0;
+			ladder = 0;
+			car_reset();			
+			run_back(LAD_BACK,1500);
+			run_left(520000,1500);
+			dingwei();
+			change_pid_nomal();
 #endif
 			
 #ifdef RED			
@@ -1031,38 +977,76 @@ CLIP:									aimed2 = 0;
 				{
 					chassis.vx_set = 0;
 					angle_lift = LAD3_HIGH;
-					osDelay(2000);
+					osDelay(1500);
 					ladder = 3;
 				}
 				
+				if(chassis.position_x > LAD2_DIS-250000 && chassis.position_x < LAD2_DIS)//防止阶梯未降下就空夹（范围判断）
+				{
+					ball_x = 0;
+					ball_y = 0;
+				}
 				
 				if(ball_x == 0 || ball_y == 0)//球没出现则平移
 				{
 					chassis.vx_set = LAD_SPD;
+					chassis.vy_set = 0;
 				}
 				else
 				{
-						if(!aimed2) Aim(&aimed2);
-						else 
-						{	
-							aimed2 = 0;
-							chassis.vx_set = 0;
-							chassis.vy_set = 0;
-							close_openmv();
-							clipit();
-							open_openmv();
-						}
+		
+									if(!aimed2) 
+									{
+										
+										if((chassis.position_x < LAD1_DIS + 150000 && chassis.position_x > LAD1_DIS - 150000) || (chassis.position_x < LAD2_DIS + 150000 && chassis.position_x > LAD2_DIS - 150000))// 角落球,强行瞄准模式（不允许升降打断）
+										{
+											while(!aimed2)
+											{
+												Aim(&aimed2);
+												osDelay(1);
+											}
+											goto CLIP;
+											
+										}
+										else//普通瞄准（只关心当前）
+										{
+											Aim(&aimed2);
+										}
+									}
+									else 
+									{	
+CLIP:									aimed2 = 0;
+											chassis.vx_set = 0;
+											chassis.vy_set = 0;
+											close_openmv();
+											clipit();
+											if(chassis.position_x < LAD1_DIS + 150000 && chassis.position_x > LAD1_DIS - 150000) //平台1的角落球,特殊处理
+											{
+												while(chassis.position_x > LAD1_DIS - 250000)
+												{
+													chassis.vx_set = -LAD_SPD;//回走
+													osDelay(1);
+												}
+												chassis.vx_set = 0;
+												angle_lift = LAD2_HIGH;
+												osDelay(500);
+											}
+											open_openmv();
+									}
+						
 				}
 				osDelay(1);
 			}//endwhile
-#endif
+			
 			chassis.vx_set = 0;
 			ladder = 0;
 			car_reset();			
 			run_back(LAD_BACK,1500);
-			run_left(520000,1500);
+			run_right(520000,1500);
 			dingwei();
 			change_pid_nomal();
+#endif
+
 			stage = gotoSecondPlatform;
 		}//endstage
     osDelay(1);
@@ -1097,12 +1081,13 @@ void GotoSecond(void const * argument)
 #endif
 			
 #ifdef RED
-			run_left(GS1_LEFT,RUN_SPD);
-			osDelay(300);
-			chassis.chassis_yaw_set = GS2_YAW;
-			osDelay(800);
-			run_front(GS3_FRONT,RUN_SPD);
-			osDelay(300);
+			change_yaw_pid_run();
+			chassis.chassis_yaw_set = 90;
+			osDelay(3500);
+			change_yaw_pid_run();
+			run_front(6740000,RUN_SPD);
+			run_right(4940000,RUN_SPD);
+			dingwei();
 #endif
 			
 			stage = takeSecondPlatformBalls;
@@ -1145,11 +1130,18 @@ void GotoWearhouse(void const * argument)
 #endif
 			
 #ifdef RED
+			run_right(8080000,RUN_SPD);
+			
+			close_openmv();
+			prepare();
+			change_pid_slow();
+			chassis_reset();
+
+			dingwei();
 			osDelay(300);
-			chassis.chassis_yaw_set = GW1_YAW;
-			osDelay(800);
-			run_left(GW2_LEFT,RUN_SPD);
-			osDelay(300);
+			run_back(160000,1500);
+			
+			open_openmv();
 #endif
 			stage = takeLiZhuangBalls;
 		}
@@ -1187,8 +1179,14 @@ void Gohome(void const * argument)
 #endif
 			
 #ifdef RED
+			run_back(500000,RUN_SPD);
+			car_reset();
 			run_left(GH1_LEFT,RUN_SPD);
+			dingwei();
+			change_yaw_pid_turn();
 			chassis.chassis_yaw_set = GH2_YAW;
+			osDelay(2500);
+			change_yaw_pid_run();
 			run_right(GH3_RIGHT,RUN_SPD);
 			run_back(GH4_BACK,RUN_SPD);
 #endif
@@ -1923,6 +1921,7 @@ void reset_daoduo(void)
 
 void dingwei(void)
 {
+#ifdef BLUE
 	if(stage == gotoFirstPlatform)
 	{
 		while(beyoundred[0])
@@ -2032,6 +2031,119 @@ void dingwei(void)
 		chassis.vy_set = 0;
 		run_back(1000000,1500);
 	}
+#endif
+	
+#ifdef RED
+	if(stage == gotoFirstPlatform)
+	{
+		while(beyoundred[4])
+		{
+			chassis.vx_set = 3000;
+			osDelay(1);
+		}
+		chassis.vx_set = 0;
+		while(beyoundred[0])
+		{
+			chassis.vy_set = -3000;
+			osDelay(1);
+		}
+		chassis.vy_set = 0;
+	}
+	else if(stage == takeFirstPlatformBalls)
+	{
+		while(beyoundred[4])
+		{
+			chassis.vx_set = 3000;
+			osDelay(1);
+		}
+		chassis.vx_set = 0;
+		while(beyoundred[0])
+		{
+			chassis.vy_set = -3000;
+			osDelay(1);
+		}
+		chassis.vy_set = 0;
+	}
+	else if(stage == gotoSecondPlatform)
+	{
+		while(beyoundred[7])
+		{
+			chassis.vx_set = -3000;
+			osDelay(1);
+		}
+		chassis.vx_set = 0;
+		while(beyoundred[5])
+		{
+			chassis.vy_set = 3000;
+			osDelay(1);
+		}
+		chassis.vy_set = 0;
+	}
+	else if(stage == gotoWearhouse)
+	{
+		osDelay(1000);
+		while(beyoundred[9])
+		{
+			chassis.vx_set = -3000;
+			osDelay(1);
+		}
+		chassis.vx_set = 0;
+		while(beyoundred[4])
+		{
+			chassis.vy_set = -3000;
+			osDelay(1);
+		}
+		chassis.vy_set = 0;
+	}
+	else if(stage == gotoDaoduo)
+	{
+		while(beyoundred[0])
+		{
+			chassis.vx_set = -3000;
+			osDelay(1);
+		}
+		chassis.vx_set = 0;
+		while(beyoundred[4])
+		{
+			chassis.vy_set = -3000;
+			osDelay(1);
+		}
+		chassis.vy_set = 0;
+		run_back(1000000,1500);
+	}
+	else if(stage == gotoputball)
+	{
+		while(beyoundred[0])
+		{
+			chassis.vx_set = -3000;
+			osDelay(1);
+		}
+		chassis.vx_set = 0;
+		while(beyoundred[4])
+		{
+			chassis.vy_set = -3000;
+			osDelay(1);
+		}
+		chassis.vy_set = 0;
+		run_back(1000000,1500);
+	}
+	else if(stage == goHome)
+	{
+		while(beyoundred[4])
+		{
+			chassis.vx_set = 3000;
+			osDelay(1);
+		}
+		chassis.vx_set = 0;
+		while(beyoundred[0])
+		{
+			chassis.vy_set = -3000;
+			osDelay(1);
+		}
+		chassis.vy_set = 0;
+		run_back(1000000,1500);
+	}
+#endif
 }
 
 
