@@ -37,6 +37,7 @@
 #include "delay.h"
 #include "sr04.h"
 #include "QRCode.h"
+#include "timer.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,7 +64,7 @@ enum Stage
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define RED  //RED OR BLUE
+#define BLUE  //RED OR BLUE
 
 
 #ifdef BLUE
@@ -108,7 +109,7 @@ enum Stage
 #define LAD_FRONT 192000
 #define LAD_TOTAL_DISTANCE 5771216
 #define LAD1_DIS 1600000
-#define LAD2_DIS 4030000
+#define LAD2_DIS 4100000
 #define LAD1_HIGH 330000
 #define LAD2_HIGH 450000
 #define LAD3_HIGH 170000
@@ -120,10 +121,10 @@ enum Stage
 #define APPROACH_SPD 1500
 #define WEAR_BACK_SPD 1500
 
-#define GH1_LEFT 52000*70
-#define GH2_YAW 0
+#define GH1_LEFT 52000*130
+#define GH2_YAW -360
 #define GH3_RIGHT 2300000
-#define GH4_BACK  2372905
+#define GH4_BACK  2112905
 
 #endif
 
@@ -157,6 +158,7 @@ uint8_t rwm_sq[3] = {0};
 
 uint8_t sw1 = 0,sw2 = 0;
 int found_ball_time = 0;
+
 
 //≤‚ ‘ ˝æ›
 int a = 6290000,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q;
@@ -673,15 +675,20 @@ void BarPlatform(void const * argument)
 			servos.bo = 50;
 			osDelay(500);
 			open_openmv();
+			get_dt_in_seconds(&run_time);
 
 			
 			while(ball_num < 5)
 			{
 				wait_ball();
+				if(run_time.time_total > 20)
+				goto BALL_FINISH;
+				
 				boit();
 				ball_num++;
 			}
 				
+BALL_FINISH:
 			change_pid_nomal();
 			run_back(1300000,4000);
 			car_reset();
@@ -1140,7 +1147,7 @@ void GotoWearhouse(void const * argument)
 			dingwei();
 			osDelay(300);
 			run_back(160000,1500);
-			
+			run_right(250000,1500);
 			open_openmv();
 #endif
 			stage = takeLiZhuangBalls;
@@ -1212,7 +1219,7 @@ void GotoPutball(void const * argument)
   {
 		if(stage == gotoputball)
 		{
-			run_left(6240000,6500);
+			run_left(5040000,6500);
 			dingwei();
 			run_right(520000,1500);
 			stage = PutBalls;
@@ -1243,7 +1250,6 @@ void daoduoTask(void const * argument)
 			change_pid_slow();
 			next_lattice_v2(true,1);
 			prepare();
-			approach(&approach_y1);
 			chassis.vx_set = 0;
 			chassis.vy_set = 0;
 			
@@ -1261,8 +1267,12 @@ void daoduoTask(void const * argument)
 				{
 					if(ball_exist())
 					{
+						approach(&approach_y1);
+						chassis.vx_set = 0;
+						chassis.vy_set = 0;
 						clipit_daoduo();
 						cliped = true;
+						run_back(approach_y1,1500);
 						break;
 					}
 					else
@@ -1275,8 +1285,10 @@ void daoduoTask(void const * argument)
 				next_lattice_v2(1, 4-lattice_daoduo);
 				if(cliped) 
 				{
+					approach(&approach_y1);
 					putBall_daoduo();
 				  cliped = false;
+					run_back(approach_y1,1500);
 				}
 				
 				if(layer < 3)
@@ -1392,7 +1404,7 @@ void gotodaoduo(void const * argument)
   {
 		if(stage == gotoDaoduo)
 		{
-			//chassis.chassis_yaw_set += 3.0;
+			chassis.chassis_yaw_set += 3.0;
 			osDelay(500);
 			change_pid_nomal();
 			run_left(4160000,RUN_SPD);
@@ -1407,7 +1419,6 @@ void gotodaoduo(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-
 
 
 
@@ -1487,8 +1498,10 @@ void Aim(bool* Aimed)
 
 void  wait_ball()
 {
-	while(ball_x < 115 || ball_x > 125)
+	while(ball_x < 5 || ball_x > 15)
 	{
+		get_totaltime_in_seconds(&run_time);
+		if(run_time.time_total > 40) break;
 		osDelay(1);
 	}
 	return;
@@ -1544,8 +1557,8 @@ void next_lattice_v2(bool right, uint8_t number)
 	change_pid_slow();
 	if(stage == daoduo)
 	{
-		beyong_red[0] = 0;
-		beyong_red[1] = 4;
+		beyong_red[0] = 9;
+		beyong_red[1] = 5;
 	}
 	else 	if(stage == PutBalls)
 	{
@@ -1605,6 +1618,7 @@ void approach(int32_t * approach_y)
 		chassis.vy_set = -APPROACH_SPD;
 		osDelay(1);
 	}
+	chassis.vy_set = 0;
 	change_pid_nomal();
 	*approach_y = -chassis.position_y;
 }
@@ -1714,7 +1728,7 @@ void prepare()
 		servos.bo = 120;
 		servos.top = 110;
 		osDelay(500);
-		angle_lift = 415000;
+		angle_lift = 435000;
 		servos.yindao =  80;
 		osDelay(500);
 	}
@@ -1754,7 +1768,7 @@ void prepare()
 	{ 
 		servos.top = 135;
 		osDelay(500);
-		angle_lift = 340000;
+		angle_lift = 330000;
 		osDelay(1500);
 		servos.arm = 120;
 		osDelay(500);

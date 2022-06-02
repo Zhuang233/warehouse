@@ -11,6 +11,7 @@ typedef struct
 }TIME;
 
 extern TIME ctrl_time;
+extern TIME run_time;
 
 void get_dt_in_micros(TIME *time);
 void get_dt_in_millis(TIME *time);

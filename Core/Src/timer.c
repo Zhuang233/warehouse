@@ -1,6 +1,7 @@
 #include "timer.h"
 
 TIME ctrl_time={0,0,0,0};
+TIME run_time ={0,0,0,0};
 
 
 void get_dt_in_micros(TIME *time)
