@@ -84,7 +84,7 @@ enum Stage
 #define GF3_YAW 90
 #define GF4_RIGHT 4600000
 
-#define LAD_FRONT 192000 
+#define LAD_FRONT 0 
 #define LAD_TOTAL_DISTANCE -5771216
 #define LAD1_DIS -1950000
 #define LAD2_DIS -4398873
@@ -1141,7 +1141,8 @@ void GotoWearhouse(void const * argument)
 			dingwei();
 			osDelay(300);
 			run_back(160000,1500);
-			
+			osDelay(300);
+			run_right(104000,1500);
 			open_openmv();
 #endif
 			
@@ -1343,14 +1344,14 @@ void lizhuangTask(void const * argument)
 			while(chassis.chassis_yaw > initial_yaw - 360.0 && chassis.chassis_yaw < initial_yaw+360.0)//one cycle
 			{
 				
-				chassis.vx_set = 1500;
-				chassis.chassis_yaw_set -=0.0225;
+				chassis.vx_set = 515;
+				chassis.chassis_yaw_set -=0.0075;
 				
 				if(ball_x > 65 && ball_x < 75)//have found ball
 				{
 					chassis.vx_set = 0;
 					chassis.vy_set = 0;
-					
+					chassis.chassis_yaw_set = chassis.chassis_yaw;
 					chassis_reset();
 					
 					while(ball_y < 45 || ball_y > 55)
@@ -1384,6 +1385,8 @@ void lizhuangTask(void const * argument)
 			chassis.vy_set = 0;
 			run_back(850000,1500);
 			car_reset();
+			angle_lift = 0;
+			osDelay(500);
 			run_front(850000,1500);
 			change_pid_nomal();
 			change_yaw_pid_turn();
@@ -1469,12 +1472,12 @@ void car_reset()
 	{
 		servos.yindao = 160;
 		servos.move = 280;
-		angle_lift = 0;
 		osDelay(800);
 		servos.arm = 30;
-		servos.clip = 80;
+		servos.clip = 127;
 		servos.bo = 46;
 		servos.top = 50;
+		osDelay(1200);
 	}
 	else if(stage == goHome)
 	{
@@ -1584,7 +1587,7 @@ void next_lattice_v2(bool right, uint8_t number)
 				chassis.vx_set = -WEAR_SPD;
 				osDelay(1);
 			}
-			run_right(780000,WEAR_SPD);
+			run_right(680000,WEAR_SPD);
 			lattice_daoduo ++;
 		}
 		else
