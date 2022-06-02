@@ -72,6 +72,8 @@ enum Stage
 #define YAW_CORRECT_PUTBALL		6.2f
 #define YAW_CORRECT_GOHOME 		9.0f
 
+#define BASE_SPD 3000
+#define RAMP_RATE 0.005
 
 #ifdef BLUE
 
@@ -677,7 +679,7 @@ void BarPlatform(void const * argument)
 			change_pid_slow();
 			osDelay(2000);
 			chassis_reset();
-			run_front(1355000,1000);
+			run_front(1300000,1000);
 			servos.bo = 50;
 			osDelay(500);
 			open_openmv();
@@ -1681,24 +1683,40 @@ bool check_ball(uint8_t x,uint8_t y )
 
 void run_left(int32_t distance , int16_t speed)
 {
+	int32_t d_dis =  distance - chassis.position_x;
 	chassis_reset();
 	osDelay(3);
-	while(chassis.position_x < distance)
+	while(d_dis > 0)
 	{
-		chassis.vx_set = speed;
+		d_dis =  distance - chassis.position_x;
+		
+		if(chassis.position_x < distance/2)
+		chassis.vx_set = BASE_SPD + chassis.position_x * RAMP_RATE;
+		else
+		chassis.vx_set = BASE_SPD + d_dis * RAMP_RATE;
+		
+		if(chassis.vx_set > speed) chassis.vx_set = speed;
 		osDelay(1);
 	}
 	chassis.vx_set = 0;
-	
 }
 
 void run_right(int32_t distance , int16_t speed)
 {
+	int32_t d_dis =  chassis.position_x + distance;
 	chassis_reset();
 	osDelay(3);
-	while(chassis.position_x > -distance)
+	while(d_dis > 0)
 	{
-		chassis.vx_set = -speed;
+		d_dis =  chassis.position_x + distance;
+		
+		if(-chassis.position_x < distance/2)
+		chassis.vx_set = -(BASE_SPD - chassis.position_x * RAMP_RATE);
+		else
+		chassis.vx_set = -(BASE_SPD + d_dis * RAMP_RATE);
+		
+		if(chassis.vx_set < -speed) chassis.vx_set = -speed;
+
 		osDelay(1);
 	}
 	chassis.vx_set = 0;
@@ -1706,11 +1724,20 @@ void run_right(int32_t distance , int16_t speed)
 
 void run_front(int32_t distance , int16_t speed)
 {
+	int32_t d_dis =  chassis.position_y + distance;
 	chassis_reset();
 	osDelay(3);
-	while(chassis.position_y > -distance)
+	while(d_dis > 0)
 	{
-		chassis.vy_set = -speed;
+		d_dis =  chassis.position_y + distance;
+		
+		if(-chassis.position_y < distance/2)
+		chassis.vy_set = -(BASE_SPD - chassis.position_y * RAMP_RATE);
+		else
+		chassis.vy_set = -(BASE_SPD + d_dis * RAMP_RATE);
+		
+		if(chassis.vy_set < -speed) chassis.vy_set = -speed;
+
 		osDelay(1);
 	}
 	chassis.vy_set = 0;
@@ -1718,11 +1745,19 @@ void run_front(int32_t distance , int16_t speed)
 
 void run_back(int32_t distance , int16_t speed)
 {
+	int32_t d_dis =  distance - chassis.position_y;
 	chassis_reset();
 	osDelay(3);
-	while(chassis.position_y < distance)
+	while(d_dis > 0)
 	{
-		chassis.vy_set = speed;
+		d_dis =  distance - chassis.position_y;
+		
+		if(chassis.position_y < distance/2)
+		chassis.vy_set = BASE_SPD + chassis.position_y * RAMP_RATE;
+		else
+		chassis.vy_set = BASE_SPD + d_dis * RAMP_RATE;
+		
+		if(chassis.vy_set > speed) chassis.vy_set = speed;
 		osDelay(1);
 	}
 	chassis.vy_set = 0;
