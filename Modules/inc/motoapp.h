@@ -38,6 +38,7 @@ extern PidObject pid_chassis_spd[4];
 extern PidObject pid_chassis_pos[4];
 extern PidObject pid_chassis_yaw_spd;
 extern PidObject pid_chassis_yaw_pos;
+extern float yaw_correction;
 
 
 extern PidObject pid_lift_spd[2];

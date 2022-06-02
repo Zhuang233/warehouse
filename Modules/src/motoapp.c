@@ -77,6 +77,7 @@ PidObject pid_chassis_spd[4];
 PidObject pid_chassis_pos[4];
 PidObject pid_chassis_yaw_spd;
 PidObject pid_chassis_yaw_pos;
+float yaw_correction = 0;
 
 
 PidObject pid_lift_spd[2];
@@ -292,7 +293,7 @@ void chassis_set_contorl(chassis_move_t *chassis)
 {
 	//位置(180度float角度算出int16_t的转速)
 	float temp;
-	pidSetParameter(&pid_chassis_yaw_pos,desired,chassis->chassis_yaw_set);
+	pidSetParameter(&pid_chassis_yaw_pos,desired,chassis->chassis_yaw_set + yaw_correction);
 	pidSetParameter(&pid_chassis_yaw_pos,dt,ctrl_time.dt);
 	temp=pidUpdate(&pid_chassis_yaw_pos,chassis->chassis_yaw);
 	float_constraint(&temp,3500.0,-3500.0);

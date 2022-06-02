@@ -66,6 +66,12 @@ enum Stage
 
 #define BLUE  //RED OR BLUE
 
+#define WAIT_TIME 40
+#define YAW_CORRECT_PANJI 		1.5f
+#define YAW_CORRECT_LIZHUANG	4.5f
+#define YAW_CORRECT_PUTBALL		6.2f
+#define YAW_CORRECT_GOHOME 		9.0f
+
 
 #ifdef BLUE
 
@@ -78,7 +84,7 @@ enum Stage
 
 #define LAD_FRONT 192000 
 #define LAD_TOTAL_DISTANCE -5771216
-#define LAD1_DIS -2001362
+#define LAD1_DIS -1950000
 #define LAD2_DIS -4398873
 #define LAD1_HIGH 170000
 #define LAD2_HIGH 450000
@@ -626,24 +632,24 @@ void Servotask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-		if(RC_CtrlData.rc.sw1==1)
-		{
-			servos.top += RC_CtrlData.rc.ch4*0.001;
-			servos.arm += RC_CtrlData.rc.ch2*0.0005;
-		}
-		if(RC_CtrlData.rc.sw1==2)
-		{
-			servos.move-=RC_CtrlData.rc.ch4*0.001;
-			servos.yindao-=RC_CtrlData.rc.ch2*0.0002;
-		}
-		if(RC_CtrlData.rc.sw2== 1)
-		{
-			servos.bo -= RC_CtrlData.rc.ch5*0.001;
-		}
-		else
-		{
-		servos.clip -= RC_CtrlData.rc.ch5 * 0.0003;
-		}
+//		if(RC_CtrlData.rc.sw1==1)
+//		{
+//			servos.top += RC_CtrlData.rc.ch4*0.001;
+//			servos.arm += RC_CtrlData.rc.ch2*0.0005;
+//		}
+//		if(RC_CtrlData.rc.sw1==2)
+//		{
+//			servos.move-=RC_CtrlData.rc.ch4*0.001;
+//			servos.yindao-=RC_CtrlData.rc.ch2*0.0002;
+//		}
+//		if(RC_CtrlData.rc.sw2== 1)
+//		{
+//			servos.bo -= RC_CtrlData.rc.ch5*0.001;
+//		}
+//		else
+//		{
+//		servos.clip -= RC_CtrlData.rc.ch5 * 0.0003;
+//		}
 		servos_control_loop();
     osDelay(1);
   }
@@ -671,7 +677,7 @@ void BarPlatform(void const * argument)
 			change_pid_slow();
 			osDelay(2000);
 			chassis_reset();
-			run_front(1364000,1000);
+			run_front(1355000,1000);
 			servos.bo = 50;
 			osDelay(500);
 			open_openmv();
@@ -681,7 +687,7 @@ void BarPlatform(void const * argument)
 			while(ball_num < 5)
 			{
 				wait_ball();
-				if(run_time.time_total > 20)
+				if(run_time.time_total > WAIT_TIME)
 				goto BALL_FINISH;
 				
 				boit();
@@ -692,8 +698,8 @@ BALL_FINISH:
 			change_pid_nomal();
 			run_back(1300000,4000);
 			car_reset();
-			run_front(1040000,4000);
 			change_yaw_pid_turn();
+			yaw_correction = YAW_CORRECT_PANJI;
 			#ifdef BLUE
 			chassis.chassis_yaw_set = 90;
 			#endif
@@ -703,7 +709,7 @@ BALL_FINISH:
 			#endif
 			osDelay(2500);
 			change_yaw_pid_run();
-			
+			run_back(500000,4000);
 
 //			chassis.vx_set = 0;
 //			run_back(BAR_BACK,RUN_SPD);
@@ -1081,10 +1087,13 @@ void GotoSecond(void const * argument)
 			chassis.chassis_yaw_set = -90;
 			osDelay(3500);
 			change_yaw_pid_run();
-			run_front(6240000,RUN_SPD);
+			run_front(6800000,RUN_SPD);
 			run_left(4940000,RUN_SPD);
 			dingwei();
-
+			
+			change_pid_slow();
+			run_left(250000,1500);
+			change_pid_nomal();
 #endif
 			
 #ifdef RED
@@ -1131,7 +1140,7 @@ void GotoWearhouse(void const * argument)
 			osDelay(300);
 			run_back(160000,1500);
 			osDelay(300);
-			run_right(104000,1500);
+			run_left(156000,1500);
 			
 			open_openmv();
 #endif
@@ -1174,6 +1183,7 @@ void Gohome(void const * argument)
 		{
 #ifdef BLUE
 			run_back(500000,RUN_SPD);
+			yaw_correction = YAW_CORRECT_GOHOME;
 			car_reset();
 			run_right(GH1_RINGT,RUN_SPD);
 			dingwei();
@@ -1220,6 +1230,7 @@ void GotoPutball(void const * argument)
 		if(stage == gotoputball)
 		{
 			run_left(5040000,6500);
+			yaw_correction = YAW_CORRECT_PUTBALL;
 			dingwei();
 			run_right(520000,1500);
 			stage = PutBalls;
@@ -1377,6 +1388,7 @@ void lizhuangTask(void const * argument)
 			car_reset();
 			
 			change_yaw_pid_turn();
+			yaw_correction = YAW_CORRECT_LIZHUANG;
 			chassis.chassis_yaw_set = initial_yaw - 180.0;
 			osDelay(3000);
 			change_yaw_pid_run();
@@ -1404,8 +1416,6 @@ void gotodaoduo(void const * argument)
   {
 		if(stage == gotoDaoduo)
 		{
-			chassis.chassis_yaw_set += 3.0;
-			osDelay(500);
 			change_pid_nomal();
 			run_left(4160000,RUN_SPD);
 			dingwei();
@@ -1501,7 +1511,7 @@ void  wait_ball()
 	while(ball_x < 5 || ball_x > 15)
 	{
 		get_totaltime_in_seconds(&run_time);
-		if(run_time.time_total > 40) break;
+		if(run_time.time_total > WAIT_TIME) break;
 		osDelay(1);
 	}
 	return;
@@ -1968,7 +1978,7 @@ void dingwei(void)
 	}
 	else if(stage == gotoSecondPlatform)
 	{
-		while(beyoundred[7])
+		while(beyoundred[5])
 		{
 			chassis.vx_set = 3000;
 			osDelay(1);
@@ -1984,7 +1994,7 @@ void dingwei(void)
 	else if(stage == gotoWearhouse)
 	{
 		osDelay(1000);
-		while(beyoundred[7])
+		while(beyoundred[4])
 		{
 			chassis.vx_set = 3000;
 			osDelay(1);
