@@ -1384,9 +1384,9 @@ void lizhuangTask(void const * argument)
 			chassis.vx_set = 0;
 			chassis.vy_set = 0;
 			run_back(850000,1500);
-			change_pid_nomal();
 			car_reset();
-			
+			run_front(850000,1500);
+			change_pid_nomal();
 			change_yaw_pid_turn();
 			yaw_correction = YAW_CORRECT_LIZHUANG;
 			chassis.chassis_yaw_set = initial_yaw - 180.0;
