@@ -64,7 +64,7 @@ enum Stage
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define BLUE  //RED OR BLUE
+#define RED  //RED OR BLUE
 
 #define WAIT_TIME 40
 #define YAW_CORRECT_PANJI 		1.5f
@@ -131,8 +131,8 @@ enum Stage
 
 #define GH1_LEFT 52000*130
 #define GH2_YAW -360
-#define GH3_RIGHT 2300000
-#define GH4_BACK  2112905
+#define GH3_RIGHT 2600000
+#define GH4_BACK  1800000
 
 #endif
 
