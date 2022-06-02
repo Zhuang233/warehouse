@@ -101,8 +101,8 @@ enum Stage
 
 #define GH1_RINGT 6000000
 #define GH2_YAW 0
-#define GH3_LEFT 2300000
-#define GH4_BACK 2372905
+#define GH3_LEFT 2600000
+#define GH4_BACK 2120000
 
 #endif
 
@@ -517,7 +517,7 @@ void FuncTestTask(void const * argument)
 		//start run
 		if(RC_CtrlData.rc.sw2 == 2 && first_wait == true)
 		{
-			stage = gotoFirstPlatform;
+			stage = gotoFirstPlatform ;
 			first_wait = false;
 		}
 		//自动夹取加识别测试
@@ -679,7 +679,7 @@ void BarPlatform(void const * argument)
 			change_pid_slow();
 			osDelay(2000);
 			chassis_reset();
-			run_front(1300000,1000);
+			run_front(1330000,1000);
 			servos.bo = 50;
 			osDelay(500);
 			open_openmv();
@@ -1141,8 +1141,6 @@ void GotoWearhouse(void const * argument)
 			dingwei();
 			osDelay(300);
 			run_back(160000,1500);
-			osDelay(300);
-			run_left(156000,1500);
 			
 			open_openmv();
 #endif
@@ -1345,14 +1343,13 @@ void lizhuangTask(void const * argument)
 			while(chassis.chassis_yaw > initial_yaw - 360.0 && chassis.chassis_yaw < initial_yaw+360.0)//one cycle
 			{
 				
-				chassis.vx_set = 515;
-				chassis.chassis_yaw_set -=0.0075;
+				chassis.vx_set = 1500;
+				chassis.chassis_yaw_set -=0.0225;
 				
 				if(ball_x > 65 && ball_x < 75)//have found ball
 				{
 					chassis.vx_set = 0;
 					chassis.vy_set = 0;
-					chassis.chassis_yaw_set = chassis.chassis_yaw;
 					
 					chassis_reset();
 					
@@ -1587,7 +1584,7 @@ void next_lattice_v2(bool right, uint8_t number)
 				chassis.vx_set = -WEAR_SPD;
 				osDelay(1);
 			}
-			run_right(650000,WEAR_SPD);
+			run_right(780000,WEAR_SPD);
 			lattice_daoduo ++;
 		}
 		else
@@ -1836,9 +1833,22 @@ void boit()
 	servos.move = 280;
 	osDelay(800);
 	turn_box(0,1);
-	osDelay(400);
+	osDelay(700);
+	for(uint8_t i = 0;i < 3;i++)
+	{
+		if(bodanpan.box_state[bodanpan.position - 1] != 1) 
+		{
+			turn_box(1,1);
+			osDelay(700);
+			turn_box(0,1);
+			osDelay(700);
+		}
+		else
+		{
+			break;
+		}
+	}
 	//servos.move = 100;
-	osDelay(300);
 }
 
 void clipit()
@@ -1866,6 +1876,20 @@ void clipit()
 	servos.top = 300;
 	osDelay(500);
 	servos.yindao = 68;
+	for(uint8_t i = 0;i < 3;i++)
+	{
+		if(bodanpan.box_state[bodanpan.position - 1] != 1) 
+		{
+			turn_box(1,1);
+			osDelay(700);
+			turn_box(0,1);
+			osDelay(700);
+		}
+		else
+		{
+			break;
+		}
+	}
 //	servos.move = 0;
 //	osDelay(300);
 }
