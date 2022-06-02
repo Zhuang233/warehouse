@@ -1683,7 +1683,7 @@ bool check_ball(uint8_t x,uint8_t y )
 
 void run_left(int32_t distance , int16_t speed)
 {
-	int32_t d_dis =  distance - chassis.position_x;
+	int32_t d_dis =  distance;
 	chassis_reset();
 	osDelay(3);
 	while(d_dis > 0)
@@ -1703,7 +1703,7 @@ void run_left(int32_t distance , int16_t speed)
 
 void run_right(int32_t distance , int16_t speed)
 {
-	int32_t d_dis =  chassis.position_x + distance;
+	int32_t d_dis =  distance;
 	chassis_reset();
 	osDelay(3);
 	while(d_dis > 0)
@@ -1724,7 +1724,7 @@ void run_right(int32_t distance , int16_t speed)
 
 void run_front(int32_t distance , int16_t speed)
 {
-	int32_t d_dis =  chassis.position_y + distance;
+	int32_t d_dis = distance;
 	chassis_reset();
 	osDelay(3);
 	while(d_dis > 0)
@@ -1745,7 +1745,7 @@ void run_front(int32_t distance , int16_t speed)
 
 void run_back(int32_t distance , int16_t speed)
 {
-	int32_t d_dis =  distance - chassis.position_y;
+	int32_t d_dis =  distance;
 	chassis_reset();
 	osDelay(3);
 	while(d_dis > 0)
