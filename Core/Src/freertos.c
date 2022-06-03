@@ -64,7 +64,7 @@ enum Stage
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define RED  //RED OR BLUE
+#define BLUE  //RED OR BLUE
 
 #define WAIT_TIME 40
 #define YAW_CORRECT_PANJI 		1.5f
@@ -1186,7 +1186,10 @@ void Gohome(void const * argument)
 			run_back(500000,RUN_SPD);
 			yaw_correction = YAW_CORRECT_GOHOME;
 			car_reset();
-			run_right(GH1_RINGT,RUN_SPD);
+			run_right(52000*60,3000);
+			run_back(52000*30,3000);
+			run_right(52000*75,3000);
+			run_front(52000*30,3000);
 			dingwei();
 			change_yaw_pid_turn();
 			chassis.chassis_yaw_set = GH2_YAW;
@@ -1199,7 +1202,10 @@ void Gohome(void const * argument)
 #ifdef RED
 			run_back(500000,RUN_SPD);
 			car_reset();
-			run_left(GH1_LEFT,RUN_SPD);
+			run_left(52000*85,3000);
+			run_back(52000*30,3000);
+			run_left(52000*75,3000);
+			run_front(52000*30,3000);
 			dingwei();
 			change_yaw_pid_turn();
 			chassis.chassis_yaw_set = GH2_YAW;
