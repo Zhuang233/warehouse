@@ -64,13 +64,13 @@ enum Stage
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define BLUE  //RED OR BLUE
+#define RED  //RED OR BLUE
 
 #define WAIT_TIME 40
 #define YAW_CORRECT_PANJI 		1.5f
-#define YAW_CORRECT_LIZHUANG	4.5f
-#define YAW_CORRECT_PUTBALL		6.2f
-#define YAW_CORRECT_GOHOME 		9.0f
+#define YAW_CORRECT_LIZHUANG	1.5f
+#define YAW_CORRECT_PUTBALL		3.2f
+#define YAW_CORRECT_GOHOME 		6.0f
 
 #define BASE_SPD 3000
 #define RAMP_RATE 0.005
@@ -1106,6 +1106,10 @@ void GotoSecond(void const * argument)
 			run_front(6740000,RUN_SPD);
 			run_right(4940000,RUN_SPD);
 			dingwei();
+			
+			change_pid_slow();
+			run_right(250000,1500);
+			change_pid_nomal();
 #endif
 			
 			stage = takeSecondPlatformBalls;
@@ -2158,7 +2162,7 @@ void dingwei(void)
 	}
 	else if(stage == gotoSecondPlatform)
 	{
-		while(beyoundred[7])
+		while(beyoundred[9])
 		{
 			chassis.vx_set = -3000;
 			osDelay(1);
@@ -2174,7 +2178,7 @@ void dingwei(void)
 	else if(stage == gotoWearhouse)
 	{
 		osDelay(1000);
-		while(beyoundred[9])
+		while(beyoundred[0])
 		{
 			chassis.vx_set = -3000;
 			osDelay(1);
