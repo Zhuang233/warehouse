@@ -64,13 +64,13 @@ enum Stage
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define RED  //RED OR BLUE
+#define BLUE  //RED OR BLUE
 
 #define WAIT_TIME 40
 #define YAW_CORRECT_PANJI 		1.5f
-#define YAW_CORRECT_LIZHUANG	1.5f
-#define YAW_CORRECT_PUTBALL		3.2f
-#define YAW_CORRECT_GOHOME 		6.0f
+#define YAW_CORRECT_LIZHUANG	2.5f
+#define YAW_CORRECT_PUTBALL		4.2f
+#define YAW_CORRECT_GOHOME 		8.0f
 
 #define BASE_SPD 3000
 #define RAMP_RATE 0.005
